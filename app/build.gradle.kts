@@ -14,6 +14,12 @@ android {
       keyAlias = "jdy2002"
       keyPassword = "jdy200255"
     }
+    create("release") {
+      storeFile = file("D:\\jdy2002\\appkey\\jdy.jks")
+      storePassword = "jdy200255"
+      keyAlias = "jdy2002"
+      keyPassword = "jdy200255"
+    }
   }
   namespace = "xyz.jdynb.tv"
   compileSdk = 36
