@@ -15,11 +15,11 @@
 
 ## 截图
 
-[截图](./screenshots/MuMu12-20251223-161936.png)
+![截图](./screenshots/MuMu12-20251223-161936.png)
 
-[截图](./screenshots/MuMu12-20251223-161942.png)
+![截图](./screenshots/MuMu12-20251223-161942.png)
 
-[截图](./screenshots/MuMu12-20251223-161947.png)
+![截图](./screenshots/MuMu12-20251223-161947.png)
 
 ## 注意
 
