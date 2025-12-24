@@ -1,3 +1,8 @@
+/*
+    播放指定直播
+    @param pid 直播 id
+    @param vid 视频 id
+ */
 (async function () {
     let live = window.livePlayerInstance
     let flag = true
@@ -50,12 +55,15 @@
     if (!live) {
         setTimeout(function() {
             flag = false
-        }, 5000)
+        }, 5000) // 5000 超时时间，5 秒内未获取到 livePlayerInstance 则超时
         console.log('==========获取 LivePlayer 组件实例=============')
 
         while (!live && flag) {
             live = findVideoInstanceFromApp()
-            await new Promise(resolve => setTimeout(resolve, 1));
+            if (live) {
+                break
+            }
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
         window.livePlayerInstance = live
     }

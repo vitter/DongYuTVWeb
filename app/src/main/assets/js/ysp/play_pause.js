@@ -1,3 +1,6 @@
+/*
+    播放或暂停
+*/
 (function() {
    if (window.livePlayerInstance) {
         // window.livePlayerInstance.keydownFunc({{keyCode}});

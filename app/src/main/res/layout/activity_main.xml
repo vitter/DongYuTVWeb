@@ -52,6 +52,17 @@
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btn_menu"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="40dp"
+            android:alpha="0.5"
+            android:backgroundTint="#50FFFFFF"
+            android:text="菜单"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
     </FrameLayout>
 
 </layout>

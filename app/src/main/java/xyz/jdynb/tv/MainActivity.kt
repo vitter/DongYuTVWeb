@@ -2,44 +2,42 @@ package xyz.jdynb.tv
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.appsearch.observer.ObserverCallback
+import android.content.Context
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.WindowManager
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.Observable
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import xyz.jdynb.tv.databinding.ActivityMainBinding
-import xyz.jdynb.tv.enums.LiveSource
-import xyz.jdynb.tv.fragment.CCTVVideoFragment
+import xyz.jdynb.tv.dialog.ChannelListDialog
 import xyz.jdynb.tv.fragment.LivePlayerFragment
-import xyz.jdynb.tv.fragment.VideoFragment
-import xyz.jdynb.tv.fragment.YspVideoFragment
-import xyz.jdynb.tv.model.LiveItem
+import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.model.MainModel
-import xyz.jdynb.tv.model.YspLiveChannelModel
 import xyz.jdynb.tv.utils.JsManager
-import xyz.jdynb.tv.utils.setSerializableArguments
 import java.nio.charset.StandardCharsets
+import kotlin.math.pow
+import kotlin.math.sqrt
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,12 +57,18 @@ class MainActivity : AppCompatActivity() {
 
   private val numberStringBuilder = StringBuilder()
 
-  private val liveItems = mutableListOf<YspLiveChannelModel>()
+  private val liveItems = mutableListOf<LiveChannelModel>()
 
   private val handler = Handler(Looper.getMainLooper())
 
+  private lateinit var channelListDialog: ChannelListDialog
+
   private val timeRunnable = Runnable {
     mainModel.showStatus = false
+  }
+
+  private val menuShowRunnable = Runnable {
+    binding.btnMenu.isInvisible = true
   }
 
   private val numberRunnable = Runnable {
@@ -84,6 +88,8 @@ class MainActivity : AppCompatActivity() {
 
   private lateinit var audioManager: AudioManager
 
+  private var lastBackTime = 0L
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -95,6 +101,40 @@ class MainActivity : AppCompatActivity() {
 
     binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
     binding.m = mainModel
+
+    onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        if (!channelListDialog.isShowing) {
+          if (System.currentTimeMillis() - lastBackTime < 1000) {
+            finish()
+          } else {
+            lastBackTime = System.currentTimeMillis()
+            Toast.makeText(this@MainActivity, "再按一次退出", Toast.LENGTH_SHORT).show()
+          }
+        }
+      }
+    })
+
+    val isTv = isTv(this)
+    binding.btnMenu.isInvisible = isTv
+
+    if (!isTv) {
+      handler.postDelayed(menuShowRunnable, 5000)
+    }
+
+    binding.btnMenu.setOnClickListener {
+      if (liveItems.isEmpty()) {
+        return@setOnClickListener
+      }
+      channelListDialog = ChannelListDialog(this)
+      channelListDialog.setLiveChannelList(liveItems)
+      channelListDialog.onChannelChange = { item ->
+        mainModel.currentIndex = liveItems.indexOfFirst { it.channelName == item.channelName }
+        true
+      }
+      channelListDialog.setCurrentLiveChannel(mainModel.currentLiveItem)
+      channelListDialog.show()
+    }
 
     ActivityCompat.requestPermissions(
       this, arrayOf(
@@ -112,7 +152,7 @@ class MainActivity : AppCompatActivity() {
             encodeDefaults = true
             ignoreUnknownKeys = true
           }
-          liveItems.addAll(json.decodeFromString<List<YspLiveChannelModel>>(liveJsonContent))
+          liveItems.addAll(json.decodeFromString<List<LiveChannelModel>>(liveJsonContent))
           mainModel.liveItems = liveItems
         }
       }
@@ -152,9 +192,29 @@ class MainActivity : AppCompatActivity() {
     })
   }
 
-  @SuppressLint("GestureBackNavigation")
-  override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+  override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+    if (!isTv(this)) {
+      binding.btnMenu.isInvisible = false
+      handler.removeCallbacks(menuShowRunnable)
+      handler.postDelayed(menuShowRunnable, 5000)
+    }
+    return super.dispatchTouchEvent(ev)
+  }
 
+  /**
+   * 判断是否是电视设备
+   */
+  private fun isTv(context: Context): Boolean {
+    // 判断手机和平板（通过屏幕尺寸和密度）
+    val metrics = context.resources.displayMetrics
+    val widthInches = metrics.widthPixels / metrics.xdpi
+    val heightInches = metrics.heightPixels / metrics.ydpi
+    val diagonalInches = sqrt(widthInches.toDouble().pow(2.0) + heightInches.toDouble().pow(2.0))
+    return diagonalInches >= 7.0
+  }
+
+  @SuppressLint("GestureBackNavigation")
+  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
     when (keyCode) {
       /**
        * 上
@@ -191,7 +251,7 @@ class MainActivity : AppCompatActivity() {
       KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_DPAD_LEFT -> {
         try {
           audioManager.adjustStreamVolume(
-            AudioManager.STREAM_SYSTEM,
+            AudioManager.STREAM_MUSIC,
             AudioManager.ADJUST_LOWER,
             AudioManager.FLAG_SHOW_UI
           )
@@ -200,15 +260,16 @@ class MainActivity : AppCompatActivity() {
       }
 
       KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT -> {
-        val volume = audioManager.getStreamVolume(AudioManager.STREAM_SYSTEM)
-        if (volume < audioManager.getStreamMaxVolume(AudioManager.STREAM_SYSTEM)) {
+        val volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        if (volume < audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)) {
           try {
             audioManager.adjustStreamVolume(
-              AudioManager.STREAM_SYSTEM,
+              AudioManager.STREAM_MUSIC,
               AudioManager.ADJUST_RAISE,
               AudioManager.FLAG_SHOW_UI
             )
-          } catch (_: SecurityException) {
+          } catch (e: SecurityException) {
+            Log.e(TAG, e.message.toString())
           }
         }
       }
@@ -228,7 +289,7 @@ class MainActivity : AppCompatActivity() {
 
       // 菜单
       KeyEvent.KEYCODE_MENU -> {
-
+        binding.btnMenu.callOnClick()
       }
 
       // 0

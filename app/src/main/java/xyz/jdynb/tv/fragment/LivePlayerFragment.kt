@@ -24,7 +24,8 @@ import xyz.jdynb.tv.R
 import xyz.jdynb.tv.databinding.FragmentLivePlayerBinding
 import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.event.Playable
-import xyz.jdynb.tv.model.YspLiveChannelModel
+import xyz.jdynb.tv.model.LiveChannelModel
+import xyz.jdynb.tv.model.LivePlayerModel
 import xyz.jdynb.tv.utils.JsManager.execJs
 import xyz.jdynb.tv.utils.getSerializableForKey
 import xyz.jdynb.tv.utils.setSerializableArguments
@@ -33,13 +34,15 @@ import java.io.ByteArrayInputStream
 class LivePlayerFragment: Fragment(), Playable {
 
   companion object {
-    fun newInstance(currentLiveItem: YspLiveChannelModel): LivePlayerFragment {
+    fun newInstance(currentLiveItem: LiveChannelModel): LivePlayerFragment {
       return LivePlayerFragment().also {
         it.setSerializableArguments("channelModel", currentLiveItem)
       }
     }
 
     private const val TAG = "LivePlayerFragment"
+
+    private const val YSP_HOME = "https://www.yangshipin.cn/tv/home"
 
     private const val USER_AGENT =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
@@ -56,7 +59,9 @@ class LivePlayerFragment: Fragment(), Playable {
 
   private var videoJsInterface = VideoJavaScriptInterface()
 
-  private lateinit var channelModel: YspLiveChannelModel
+  private val livePlayerModel = LivePlayerModel()
+
+  private lateinit var channelModel: LiveChannelModel
 
   inner class VideoJavaScriptInterface {
     /**
@@ -64,6 +69,7 @@ class LivePlayerFragment: Fragment(), Playable {
      */
     @JavascriptInterface
     fun onPlay() {
+
     }
 
     @JavascriptInterface
@@ -77,7 +83,7 @@ class LivePlayerFragment: Fragment(), Playable {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    channelModel = arguments?.getSerializableForKey("channelModel") ?: YspLiveChannelModel()
+    channelModel = arguments?.getSerializableForKey("channelModel") ?: LiveChannelModel()
   }
 
   override fun onCreateView(
@@ -89,14 +95,20 @@ class LivePlayerFragment: Fragment(), Playable {
     return _binding?.root
   }
 
+  @SuppressLint("ClickableViewAccessibility")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    binding.m = livePlayerModel
+
+    binding.webview.setOnTouchListener { v, event ->
+      true
+    }
 
     initWebView(webView)
-    binding.webview.loadUrl("https://www.yangshipin.cn/tv/home")
+    binding.webview.loadUrl("$YSP_HOME?pid=${channelModel.pid}")
   }
 
-  override fun play(channel: YspLiveChannelModel) {
+  override fun play(channel: LiveChannelModel) {
     channelModel = channel
     Log.i(TAG, "play: $channelModel")
     setSerializableArguments("channelModel", channel)
@@ -192,6 +204,11 @@ class LivePlayerFragment: Fragment(), Playable {
         }
         return true
       }
+
+      override fun onProgressChanged(view: WebView?, newProgress: Int) {
+        super.onProgressChanged(view, newProgress)
+        livePlayerModel.progress = newProgress
+      }
     }
   }
 
@@ -267,6 +284,7 @@ class LivePlayerFragment: Fragment(), Playable {
         // 页面加载完成
         super.onPageFinished(view, url)
 
+        webView.execJs(JsType.CLEAR_YSP)
         webView.execJs(JsType.PLAY_YSP, "pid" to channelModel.pid, "vid" to channelModel.streamId)
         webView.execJs(JsType.FULLSCREEN_YSP)
       }

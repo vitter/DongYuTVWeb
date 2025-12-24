@@ -1,10 +1,10 @@
 package xyz.jdynb.tv.event
 
-import xyz.jdynb.tv.model.YspLiveChannelModel
+import xyz.jdynb.tv.model.LiveChannelModel
 
 interface Playable {
 
-  fun play(channel: YspLiveChannelModel)
+  fun play(channel: LiveChannelModel)
 
   fun playOrPause()
 }

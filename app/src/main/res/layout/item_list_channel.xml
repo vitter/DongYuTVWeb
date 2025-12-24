@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
+
+        <variable
+            name="m"
+            type="xyz.jdynb.tv.model.LiveChannelModel" />
+
+    </data>
+
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/tv_name"
+        android:textColor="@color/white"
+        android:layout_width="match_parent"
+        android:minWidth="200dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_btn"
+        android:padding="16dp"
+        android:selected="@{m.selected}"
+        android:text="@{m.channelName}"
+        android:textSize="19sp"
+        tools:text="@string/app_name">
+
+    </TextView>
+
+</layout>

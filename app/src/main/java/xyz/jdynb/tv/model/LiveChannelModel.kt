@@ -1,12 +1,14 @@
 package xyz.jdynb.tv.model
 
 
+import androidx.databinding.BaseObservable
+import androidx.databinding.Bindable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import xyz.jdynb.tv.BR
 
 @Serializable
-data class YspLiveChannelModel(
+data class LiveChannelModel(
     @SerialName("dataType")
     var dataType: String = "",
     @SerialName("channelName")
@@ -37,4 +39,13 @@ data class YspLiveChannelModel(
     var isVip: Boolean = false,
     @SerialName("isLimitedFree")
     var isLimitedFree: Boolean = false,
-)
+): BaseObservable() {
+
+    @Bindable
+    var isSelected: Boolean = false
+        set(value) {
+            field = value
+            notifyPropertyChanged(BR.isSelected)
+        }
+
+}
