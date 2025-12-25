@@ -83,7 +83,7 @@ class ChannelListDialog(context: Context) :
         model.notifyChange()
       }
 
-      R.id.tv_name.onClick {
+      R.id.tv_channel.onClick {
         setChecked(modelPosition, true)
         onChannelChange?.invoke(getModel())
         dismiss()
