@@ -8,12 +8,14 @@ espressoCore = "3.7.0"
 appcompat = "1.7.1"
 kotlinxSerializationJson = "1.8.1"
 material = "1.6.0"
-activity = "1.8.0"
+activity = "1.12.2"
 constraintlayout = "2.2.1"
 ksp = "2.0.21-1.0.27"
 brv = "1.6.1"
 engine = "0.0.74"
 recyclerview = "1.4.0"
+kotlinxCoroutines = "1.10.2"
+navigationFragmentKtx = "2.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,6 +30,8 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 engine = { group = "com.github.liangjingkanji", name = "Engine", version.ref = "engine" }
 brv = { group = "com.github.liangjingkanji", name = "BRV", version.ref = "brv" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

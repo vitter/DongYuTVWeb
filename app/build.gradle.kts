@@ -26,7 +26,7 @@ android {
 
   defaultConfig {
     applicationId = "xyz.jdynb.tv"
-    minSdk = 21
+    minSdk = 23
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
@@ -67,6 +67,18 @@ dependencies {
   implementation(libs.engine)
   implementation(libs.brv)
   implementation(libs.kotlinx.serialization.json)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.coroutines.android)
+  // https://mvnrepository.com/artifact/androidx.lifecycle/lifecycle-viewmodel
+  implementation("androidx.lifecycle:lifecycle-viewmodel:2.10.0")
+  // https://mvnrepository.com/artifact/androidx.fragment/fragment-ktx
+  implementation("androidx.fragment:fragment-ktx:1.8.9")
+  // https://mvnrepository.com/artifact/androidx.fragment/fragment
+  implementation("androidx.fragment:fragment:1.8.9")
+  // https://mvnrepository.com/artifact/androidx.activity/activity-ktx
+  implementation("androidx.activity:activity-ktx:1.12.2")
+  implementation("io.github.jonanorman.android.webviewup:core:0.1.0")
+  implementation("io.github.jonanorman.android.webviewup:download-source:0.1.0")
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)

@@ -20,14 +20,17 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import xyz.jdynb.tv.MainViewModel
 import xyz.jdynb.tv.R
 import xyz.jdynb.tv.databinding.FragmentLivePlayerBinding
-import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.event.Playable
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.model.LivePlayerModel
-import xyz.jdynb.tv.utils.JsManager.execJs
-import xyz.jdynb.tv.utils.getSerializableForKey
 import xyz.jdynb.tv.utils.setSerializableArguments
 import java.io.ByteArrayInputStream
 
@@ -42,8 +45,6 @@ open class LivePlayerFragment: Fragment(), Playable {
 
     private const val TAG = "LivePlayerFragment"
 
-    private const val YSP_HOME = "https://www.yangshipin.cn/tv/home"
-
     private const val USER_AGENT =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
 
@@ -53,15 +54,15 @@ open class LivePlayerFragment: Fragment(), Playable {
 
   private var _binding: FragmentLivePlayerBinding? = null
 
-  private val binding get() = _binding!!
+  protected val binding get() = _binding!!
 
-  private val webView get() = binding.webview
+  protected val webView get() = binding.webview
 
   private var videoJsInterface = VideoJavaScriptInterface()
 
   private val livePlayerModel = LivePlayerModel()
 
-  private lateinit var channelModel: LiveChannelModel
+  protected val mainViewModel by activityViewModels<MainViewModel>()
 
   inner class VideoJavaScriptInterface {
     /**
@@ -69,7 +70,6 @@ open class LivePlayerFragment: Fragment(), Playable {
      */
     @JavascriptInterface
     fun onPlay() {
-
     }
 
     @JavascriptInterface
@@ -79,11 +79,6 @@ open class LivePlayerFragment: Fragment(), Playable {
     @JavascriptInterface
     fun onKeyDown(key: String, keyCode: Int) {
     }
-  }
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    channelModel = arguments?.getSerializableForKey("channelModel") ?: LiveChannelModel()
   }
 
   override fun onCreateView(
@@ -101,29 +96,30 @@ open class LivePlayerFragment: Fragment(), Playable {
     binding.m = livePlayerModel
 
     binding.webview.setOnTouchListener { v, event ->
+      // 拦截触摸事件
       true
     }
 
     initWebView(webView)
-    binding.webview.loadUrl("$YSP_HOME?pid=${channelModel.pid}")
+
+    viewLifecycleOwner.lifecycleScope.launch {
+      mainViewModel.currentChannelModel.collectLatest {
+        // 如果当前在数字切台的话, 就延迟 4 秒后进行切换
+        if (mainViewModel.isTypingNumber()) {
+          delay(4000L)
+          mainViewModel.clearInputNumber()
+        }
+
+        play(it)
+      }
+    }
   }
 
   override fun play(channel: LiveChannelModel) {
-    channelModel = channel
-    Log.i(TAG, "play: $channelModel")
-    setSerializableArguments("channelModel", channel)
-
-    if (_binding == null) {
-      return
-    }
-    webView.execJs(JsType.PLAY_YSP, "pid" to channel.pid, "vid" to channel.streamId)
+    // 默认的播放
   }
 
   override fun playOrPause() {
-    if (_binding == null) {
-      return
-    }
-    webView.execJs(JsType.PLAY_PAUSE)
   }
 
   /**
@@ -220,10 +216,7 @@ open class LivePlayerFragment: Fragment(), Playable {
    *
    * @return null 则默认加载，否则指定加载资源
    */
-  protected fun shouldInterceptRequest(url: String): WebResourceResponse? {
-    if (url.endsWith(".webp")) {
-      return createEmptyResponse("image/*")
-    }
+  protected open fun shouldInterceptRequest(url: String): WebResourceResponse? {
     return null
   }
 
@@ -232,7 +225,7 @@ open class LivePlayerFragment: Fragment(), Playable {
    *
    * @return true 拦截 false 不拦截
    */
-  protected fun shouldOverride(url: String): Boolean {
+  protected open fun shouldOverride(url: String): Boolean {
     // 自定义跳转逻辑
     // 例如：拦截特定协议，打开外部应用等
 
@@ -240,10 +233,12 @@ open class LivePlayerFragment: Fragment(), Playable {
     return false
   }
 
-  protected fun onPageFinished(url: String) {
-
+  /**
+   * 页面加载完成时的回调
+   */
+  protected open fun onPageFinished(url: String) {
+    // 默认处理
   }
-
 
   /**
    * WebViewClient 配置
@@ -289,19 +284,14 @@ open class LivePlayerFragment: Fragment(), Playable {
       override fun onPageFinished(view: WebView, url: String) {
         // 页面加载完成
         super.onPageFinished(view, url)
-
         onPageFinished(url)
-        webView.execJs(JsType.CLEAR_YSP)
-        // webView.execJs(JsType.PLAY_YSP, "pid" to channelModel.pid, "vid" to channelModel.streamId)
-        webView.execJs(JsType.FULLSCREEN_YSP)
       }
     }
   }
 
-
   private val emptyByteArrayStream = ByteArrayInputStream("".toByteArray())
 
-  private fun createEmptyResponse(mimeType: String = "text/plain"): WebResourceResponse {
+  protected fun createEmptyResponse(mimeType: String = "text/plain"): WebResourceResponse {
     // 创建一个空的响应
     return WebResourceResponse(
       mimeType,
@@ -314,9 +304,5 @@ open class LivePlayerFragment: Fragment(), Playable {
     super.onDestroyView()
     webView.destroy()
     _binding = null
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
   }
 }

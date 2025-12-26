@@ -4,53 +4,45 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        android:padding="20dp"
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:id="@+id/channel_type"
+            android:padding="20dp"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_weight="1"
+            android:layout_height="0dp">
 
-            <ImageButton
-                android:id="@+id/btn_left"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/baseline_chevron_left_24"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:tint="@color/white" />
-
-            <TextView
-                android:textSize="19sp"
-                android:id="@+id/tv_channel"
-                android:layout_marginHorizontal="16dp"
-                tools:text="CCTV1"
-                android:layout_width="wrap_content"
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_gravity="center_vertical"
+                android:id="@+id/rv_group"
+                android:orientation="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"/>
 
-            <ImageButton
-                android:id="@+id/btn_right"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/baseline_chevron_right_24"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:tint="@color/white" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_marginStart="10dp"
+                android:id="@+id/rv_channel"
+                app:spanCount="4"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
 
         </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_marginTop="10dp"
-            android:id="@+id/rv_channel"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:orientation="vertical"
-            android:layout_weight="1"
-            android:layout_width="300dp"
-            android:layout_height="0dp"/>
+        <TextView
+            tools:text="15秒无操作后自动返回"
+            android:id="@+id/tv_tips"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

@@ -7,7 +7,7 @@ enum class JsType(val filename: String, val liveSource: LiveSource) {
 
   PLAY_YSP("play", LiveSource.YSP),
 
-  PLAY_PAUSE("play_pause", LiveSource.YSP)
+  PLAY_PAUSE_YSP("play_pause", LiveSource.YSP)
 
   ;
 

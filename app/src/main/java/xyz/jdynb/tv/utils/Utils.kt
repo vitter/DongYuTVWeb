@@ -35,8 +35,6 @@ inline fun <reified T> Bundle.toObj(): T? {
   return obj
 }
 
-
-
 /**
  * Bundle 中添加序列化参数
  */

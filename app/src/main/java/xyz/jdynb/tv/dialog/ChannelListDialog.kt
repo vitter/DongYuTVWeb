@@ -1,77 +1,103 @@
 package xyz.jdynb.tv.dialog
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
-import android.view.Gravity
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.drake.brv.annotaion.DividerOrientation
 import com.drake.brv.utils.bindingAdapter
+import com.drake.brv.utils.divider
 import com.drake.brv.utils.dividerSpace
 import com.drake.brv.utils.models
 import com.drake.brv.utils.setup
 import com.drake.engine.base.EngineDialog
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import xyz.jdynb.tv.MainViewModel
 import xyz.jdynb.tv.R
 import xyz.jdynb.tv.databinding.DialogChannelListBinding
+import xyz.jdynb.tv.databinding.ItemListGroupBinding
 import xyz.jdynb.tv.model.LiveChannelGroupModel
 import xyz.jdynb.tv.model.LiveChannelModel
+import xyz.jdynb.tv.utils.isTv
+import kotlin.math.ceil
 
-class ChannelListDialog(context: Context) :
-  EngineDialog<DialogChannelListBinding>(context, R.style.ChannelDialogStyle) {
+class ChannelListDialog(
+  private val activity: AppCompatActivity,
+  private val mainViewModel: MainViewModel
+) :
+  EngineDialog<DialogChannelListBinding>(activity, R.style.ChannelDialogStyle) {
 
-  private val liveChannelGroupList = mutableListOf<LiveChannelGroupModel>()
+  companion object {
 
-  private var currentIndex = 0
+    private const val TAG = "ChannelListDialog"
 
-  private var currentLiveChannel = LiveChannelModel()
+    private const val AUTO_CLOSE_TIME = 60000L
 
-  var onChannelChange: ((liveChannelModel: LiveChannelModel) -> Boolean)? = null
-
-  fun setLiveChannelList(channelList: List<LiveChannelModel>) {
-    liveChannelGroupList.clear()
-    liveChannelGroupList.addAll(channelList.groupBy { it.channelType }.map {
-      LiveChannelGroupModel(it.key, it.value)
-    })
   }
 
-  fun setCurrentLiveChannel(liveChannelModel: LiveChannelModel) {
-    currentLiveChannel = liveChannelModel
-  }
+  private var closeTime = AUTO_CLOSE_TIME
 
-  private fun getCurrentIndex(): Int {
-    val index =
-      liveChannelGroupList.indexOfFirst { it.channelType == currentLiveChannel.channelType }
-    return if (index == -1) 0 else index
-  }
-
-  @SuppressLint("NotifyDataSetChanged")
-  private fun updateCurrentChannelList() {
-    val currentChannelGroup = liveChannelGroupList[currentIndex]
-    val currentChannelList = currentChannelGroup.channelList.onEach {
-      it.isSelected = false
-    }
-    binding.tvChannel.text = liveChannelGroupList[currentIndex].channelType
-    binding.rvChannel.models = currentChannelList
-    val position = if (currentChannelGroup.channelType == currentLiveChannel.channelType) {
-      currentChannelList.indexOfFirst { it.channelName == currentLiveChannel.channelName }
-    } else {
-      0
-    }
-    binding.rvChannel.bindingAdapter.setChecked(position, true)
-    scrollToPositionWithCenter(position)
-  }
+  private var job: Job? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.dialog_channel_list)
+
+    window?.setLayout(
+      WindowManager.LayoutParams.MATCH_PARENT,
+      (context.resources.displayMetrics.heightPixels * 0.85).toInt()
+    )
+  }
+
+  override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    closeTime = AUTO_CLOSE_TIME
+    return super.onKeyDown(keyCode, event)
+  }
+
+  override fun onStart() {
+    super.onStart()
+    Log.i(TAG, "onStart")
+    if (!isTv(context)) {
+      binding.tvTips.isVisible = false
+      return
+    }
+    binding.tvTips.isVisible = true
+    closeTime = AUTO_CLOSE_TIME
+    job = activity.lifecycleScope.launch {
+      while (true) {
+        if (closeTime <= 0) {
+          dismiss()
+          break
+        }
+        binding.tvTips.text = "${closeTime / 1000L}秒无操作后自动返回"
+        delay(1000)
+        closeTime -= 1000
+      }
+    }
+  }
+
+  override fun onStop() {
+    super.onStop()
+    Log.i(TAG, "onStop")
+    job?.cancel()
   }
 
   override fun initView() {
-    val attrs = window!!.attributes
-    attrs.gravity = Gravity.START
-
-    binding.rvChannel.dividerSpace(10).setup {
+    binding.rvChannel.divider {
+      setDivider(10)
+      orientation = DividerOrientation.GRID
+    }.setup {
       singleMode = true
 
       addType<LiveChannelModel>(R.layout.item_list_channel)
@@ -79,119 +105,75 @@ class ChannelListDialog(context: Context) :
       onChecked { position, checked, allChecked ->
         val model = getModel<LiveChannelModel>(position)
         model.isSelected = checked
-        model.notifyChange()
       }
 
       R.id.tv_channel.onClick {
+        val model = getModel<LiveChannelModel>()
         setChecked(modelPosition, true)
-        onChannelChange?.invoke(getModel())
+        mainViewModel.changeCurrentIndex(model.number - 1)
         dismiss()
       }
     }
 
-    binding.btnLeft.setOnClickListener {
-      onKeyDown(KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent(KeyEvent.ACTION_DOWN, 0))
-    }
+    binding.rvGroup.dividerSpace(10).setup {
+      singleMode = true
 
-    binding.btnRight.setOnClickListener {
-      onKeyDown(KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent(KeyEvent.ACTION_DOWN, 0))
+      addType<LiveChannelGroupModel>(R.layout.item_list_group)
+
+      onCreate {
+        getBinding<ItemListGroupBinding>().root.onFocusChangeListener =
+          View.OnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+              setChecked(modelPosition, true)
+            }
+          }
+      }
+
+      onChecked { position, checked, allChecked ->
+        val model = getModel<LiveChannelGroupModel>(position)
+        model.isSelected = checked
+
+        if (binding.rvChannel.isComputingLayout) {
+          return@onChecked
+        }
+        binding.rvChannel.models = model.channelList.onEach { it.isSelected = false }
+        if (mainViewModel.currentGroup.value == model.channelType) {
+          val checkedPosition = model.channelList.indexOfFirst {
+            it.number == mainViewModel.currentChannelModel.value.number
+          }
+          if (checkedPosition == -1) {
+            return@onChecked
+          }
+          binding.rvChannel.bindingAdapter.setChecked(checkedPosition, true)
+
+          binding.rvChannel.post {
+            binding.rvChannel.scrollToPosition(checkedPosition)
+            if (window?.currentFocus == null) {
+              binding.rvChannel.getChildAt(checkedPosition).requestFocus()
+            }
+          }
+        }
+      }
+
+      R.id.tv_group.onClick {
+        setChecked(modelPosition, true)
+      }
     }
   }
 
   override fun initData() {
-    currentIndex = getCurrentIndex()
-    updateCurrentChannelList()
-  }
-
-  private fun scrollToPositionWithCenter(position: Int) {
-    val layoutManager = binding.rvChannel.layoutManager as LinearLayoutManager
-    // 先获取RecyclerView和item的尺寸
-    binding.rvChannel.post {
-      val recyclerViewHeight: Int = binding.rvChannel.height
-      // 获取指定位置的item view（必须等待布局完成）
-      val child: View? = layoutManager.findViewByPosition(position)
-      if (child != null) {
-        val itemHeight = child.height
-        val offset = recyclerViewHeight / 2 - itemHeight / 2
-        layoutManager.scrollToPositionWithOffset(position, offset)
-      } else {
-        // 如果item还没显示，先滚动到大致位置
-        layoutManager.scrollToPosition(position)
-        // 再次尝试获取view并调整位置
-        binding.rvChannel.post {
-          val childAgain: View? = layoutManager.findViewByPosition(position)
-          if (childAgain != null) {
-            val itemHeight = childAgain.height
-            val offset = recyclerViewHeight / 2 - itemHeight / 2
-            layoutManager.scrollToPositionWithOffset(position, offset)
-          }
+    activity.lifecycleScope.launch {
+      mainViewModel.channelGroupModelList.collect {
+        binding.rvGroup.models = it
+        val checkedPosition = it.indexOfFirst { model ->
+          model.channelType == mainViewModel.currentGroup.value
         }
+        if (checkedPosition == -1) {
+          return@collect
+        }
+        binding.rvGroup.bindingAdapter.setChecked(checkedPosition, true)
       }
     }
   }
 
-  @SuppressLint("GestureBackNavigation")
-  override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-    return when (keyCode) {
-      KeyEvent.KEYCODE_DPAD_UP -> {
-        var checkedPosition = binding.rvChannel.bindingAdapter.checkedPosition[0]
-        if (checkedPosition == 0) {
-          checkedPosition = binding.rvChannel.bindingAdapter.itemCount - 1
-        } else {
-          checkedPosition--
-        }
-        binding.rvChannel.bindingAdapter.setChecked(checkedPosition, true)
-        binding.rvChannel.scrollToPosition(checkedPosition)
-        true
-      }
-
-      KeyEvent.KEYCODE_DPAD_DOWN -> {
-        var checkedPosition = binding.rvChannel.bindingAdapter.checkedPosition[0]
-        if (checkedPosition == binding.rvChannel.bindingAdapter.itemCount - 1) {
-          checkedPosition = 0
-        } else {
-          checkedPosition++
-        }
-        binding.rvChannel.bindingAdapter.setChecked(checkedPosition, true)
-        binding.rvChannel.scrollToPosition(checkedPosition)
-        true
-      }
-
-      KeyEvent.KEYCODE_DPAD_LEFT -> {
-        if (currentIndex == 0) {
-          currentIndex = liveChannelGroupList.size - 1
-        } else {
-          currentIndex--
-        }
-        updateCurrentChannelList()
-        true
-      }
-
-      KeyEvent.KEYCODE_DPAD_RIGHT -> {
-        if (currentIndex == liveChannelGroupList.size - 1) {
-          currentIndex = 0
-        } else {
-          currentIndex++
-        }
-        updateCurrentChannelList()
-        true
-      }
-
-      KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER -> {
-        val model = binding.rvChannel.bindingAdapter.getModel<LiveChannelModel>(
-          binding.rvChannel.bindingAdapter.checkedPosition[0]
-        )
-        onChannelChange?.invoke(model)
-        dismiss()
-        true
-      }
-
-      KeyEvent.KEYCODE_ESCAPE, KeyEvent.KEYCODE_BACK -> {
-        dismiss()
-        true
-      }
-
-      else -> false
-    }
-  }
 }

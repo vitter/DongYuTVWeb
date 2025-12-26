@@ -15,16 +15,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/tv_channel"
-        android:selected="@{m.selected}"
-        android:background="@drawable/bg_btn"
-        android:minWidth="200dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:background="@drawable/bg_select"
         android:orientation="horizontal"
         android:padding="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{String.valueOf(m.num)}"
+            android:text="@{String.valueOf(m.number)}"
             android:textColor="@color/white"
             android:textSize="23sp"
             android:textStyle="bold"
@@ -35,8 +35,9 @@
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            selected="@{m.selected}"
+            android:textColor="@color/tv_select"
             android:text="@{m.channelName}"
-            android:textColor="@color/white"
             android:textSize="19sp"
             tools:text="@string/app_name">
 

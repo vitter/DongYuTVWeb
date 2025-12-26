@@ -10,7 +10,7 @@
 
         <variable
             name="m"
-            type="xyz.jdynb.tv.model.MainModel" />
+            type="xyz.jdynb.tv.MainViewModel" />
 
     </data>
 
@@ -24,7 +24,7 @@
             android:layout_height="match_parent" />
 
         <LinearLayout
-            android:visibility="@{m.showStatus ? View.VISIBLE : View.INVISIBLE}"
+            android:visibility="@{m.showCurrentChannel ? View.VISIBLE : View.INVISIBLE}"
             android:padding="30dp"
             android:background="#90000000"
             android:orientation="vertical"
@@ -44,7 +44,7 @@
                 android:textColor="@color/white"
                 android:textSize="30sp"
                 android:textStyle="bold"
-                android:text="@{m.currentLiveItem.channelName}"
+                android:text="@{m.currentChannelModel.channelName}"
                 tools:text="CCTV-1"
                 android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
