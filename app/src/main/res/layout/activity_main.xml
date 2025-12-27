@@ -7,6 +7,7 @@
     <data>
 
         <import type="android.view.View" />
+        <import type="com.drake.engine.databinding.DataBindingComponent" />
 
         <variable
             name="m"
@@ -24,7 +25,7 @@
             android:layout_height="match_parent" />
 
         <LinearLayout
-            android:visibility="@{m.showCurrentChannel ? View.VISIBLE : View.INVISIBLE}"
+            gone="@{m.showCurrentChannel}"
             android:padding="30dp"
             android:background="#90000000"
             android:orientation="vertical"
@@ -52,16 +53,51 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btn_menu"
-            android:textColor="@color/white"
+        <LinearLayout
+            gone="@{m.showActions}"
+            android:id="@+id/btn_action"
             android:layout_marginTop="20dp"
             android:layout_marginStart="40dp"
-            android:alpha="0.5"
-            android:backgroundTint="#50FFFFFF"
-            android:text="菜单"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+
+            <Button
+                hit="@{true}"
+                android:textSize="17sp"
+                android:id="@+id/btn_menu"
+                android:textColor="@color/black"
+                android:alpha="0.7"
+                android:backgroundTint="#FFFFFF"
+                android:text="换台"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                hit="@{true}"
+                android:textSize="17sp"
+                android:id="@+id/btn_left"
+                android:textColor="@color/black"
+                android:layout_marginStart="10dp"
+                android:alpha="0.7"
+                android:backgroundTint="#FFFFFF"
+                android:text="上"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:textSize="17sp"
+                hit="@{true}"
+                android:id="@+id/btn_right"
+                android:textColor="@color/black"
+                android:layout_marginStart="10dp"
+                android:alpha="0.7"
+                android:backgroundTint="#FFFFFF"
+                android:text="下"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
 
     </FrameLayout>
 

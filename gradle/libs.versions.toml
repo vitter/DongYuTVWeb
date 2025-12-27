@@ -15,7 +15,7 @@ brv = "1.6.1"
 engine = "0.0.74"
 recyclerview = "1.4.0"
 kotlinxCoroutines = "1.10.2"
-navigationFragmentKtx = "2.6.0"
+localbroadcastmanager = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +32,7 @@ engine = { group = "com.github.liangjingkanji", name = "Engine", version.ref = "
 brv = { group = "com.github.liangjingkanji", name = "BRV", version.ref = "brv" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:localbroadcastmanager", version.ref = "localbroadcastmanager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

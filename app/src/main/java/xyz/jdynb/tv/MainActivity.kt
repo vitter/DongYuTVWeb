@@ -1,22 +1,17 @@
 package xyz.jdynb.tv
 
-import android.annotation.SuppressLint
 import android.media.AudioManager
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isInvisible
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import com.drake.engine.base.EngineActivity
 import kotlinx.coroutines.launch
 import xyz.jdynb.tv.databinding.ActivityMainBinding
 import xyz.jdynb.tv.dialog.ChannelListDialog
@@ -24,7 +19,7 @@ import xyz.jdynb.tv.fragment.LivePlayerFragment
 import xyz.jdynb.tv.fragment.YspLivePlayerFragment
 import xyz.jdynb.tv.utils.isTv
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main) {
 
   companion object {
 
@@ -32,56 +27,38 @@ class MainActivity : AppCompatActivity() {
 
   }
 
-  private lateinit var binding: ActivityMainBinding
-
   private val livePlayerFragment: LivePlayerFragment = YspLivePlayerFragment()
-
-  private val handler = Handler(Looper.getMainLooper())
 
   private lateinit var channelListDialog: ChannelListDialog
 
   private val mainViewModel by viewModels<MainViewModel>()
 
-  private val menuShowRunnable = Runnable {
-    binding.btnMenu.isInvisible = true
-  }
-
   private lateinit var audioManager: AudioManager
 
   private var lastBackTime = 0L
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+  override fun init() {
+    super.init()
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     val insetsController = WindowCompat.getInsetsController(window, window.decorView)
     insetsController.hide(WindowInsetsCompat.Type.systemBars())
 
     audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+  }
 
-    binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+  override fun initView() {
     binding.m = mainViewModel
     binding.lifecycleOwner = this
 
-    val isTv = isTv(this)
-    binding.btnMenu.isInvisible = isTv
-
-    if (!isTv) {
-      handler.postDelayed(menuShowRunnable, 5000)
-    }
-
     channelListDialog = ChannelListDialog(this, mainViewModel)
-
-    binding.btnMenu.setOnClickListener {
-      if (mainViewModel.channelModelList.value.isEmpty()) {
-        return@setOnClickListener
-      }
-      channelListDialog.show()
-    }
 
     supportFragmentManager.beginTransaction()
       .replace(R.id.fragment, livePlayerFragment)
       .commitNow()
 
+  }
+
+  override fun initData() {
     lifecycleScope.launch {
       mainViewModel.currentChannelModel.collect {
         Log.i(TAG, "currentChannelModel: $it")
@@ -89,13 +66,31 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-    if (!isTv(this)) {
-      binding.btnMenu.isInvisible = false
-      handler.removeCallbacks(menuShowRunnable)
-      handler.postDelayed(menuShowRunnable, 5000)
+  override fun onClick(v: View) {
+    super.onClick(v)
+    when (v.id) {
+      R.id.btn_menu -> {
+        if (mainViewModel.channelModelList.value.isEmpty()) {
+          return
+        }
+        channelListDialog.show()
+      }
+
+      R.id.btn_left -> {
+        mainViewModel.down()
+      }
+
+      R.id.btn_right -> {
+        mainViewModel.up()
+      }
     }
-    return super.dispatchTouchEvent(ev)
+  }
+
+  override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+    if (!isTv(this)) {
+      mainViewModel.showActions()
+    }
+    return super.dispatchTouchEvent(event)
   }
 
   /**

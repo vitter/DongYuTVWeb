@@ -1,6 +1,7 @@
 package xyz.jdynb.tv
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +27,7 @@ import xyz.jdynb.tv.constants.SPKeyConstants
 import xyz.jdynb.tv.model.LiveChannelGroupModel
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.utils.JsManager
+import xyz.jdynb.tv.utils.isTv
 import java.nio.charset.StandardCharsets
 
 class MainViewModel : ViewModel() {
@@ -55,6 +57,13 @@ class MainViewModel : ViewModel() {
    * 频道分组列表
    */
   val channelGroupModelList = _channelGroupModelList.asStateFlow()
+
+  private val _showActions = MutableStateFlow(!isTv(DongYuTVApplication.context))
+
+  /**
+   * 是否显示操作按钮
+   */
+  val showActions = _showActions.asStateFlow()
 
   /**
    * 切台输入的数字
@@ -143,6 +152,15 @@ class MainViewModel : ViewModel() {
         _showCurrentChannel.value = false
       }
     }
+
+    viewModelScope.launch {
+      showActions.collectLatest {
+        if (it) {
+          delay(5000)
+          showActions(false)
+        }
+      }
+    }
   }
 
   /**
@@ -207,5 +225,9 @@ class MainViewModel : ViewModel() {
       }
       _currentIndex.value = seekToIndex
     }
+  }
+
+  fun showActions(show: Boolean = true) {
+    _showActions.value = show
   }
 }

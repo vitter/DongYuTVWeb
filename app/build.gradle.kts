@@ -86,9 +86,10 @@ dependencies {
   implementation("androidx.activity:activity-ktx:1.12.2")
   // implementation("io.github.jonanorman.android.webviewup:core:0.1.0")
   // implementation("io.github.jonanorman.android.webviewup:download-source:0.1.0")
+  implementation(libs.androidx.localbroadcastmanager)
+  implementation(files("libs/tbs_sdk-44382-202411081743-release.aar"))
+  // implementation("com.tencent.tbs:tbssdk:44286")
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
-  // implementation("com.tencent.tbs:tbssdk:44286")
-  implementation(files("libs/tbs_sdk-44382-202411081743-release.aar"))
 }

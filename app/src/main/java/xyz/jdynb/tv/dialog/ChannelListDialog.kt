@@ -50,7 +50,7 @@ class ChannelListDialog(
 
     window?.setLayout(
       WindowManager.LayoutParams.MATCH_PARENT,
-      (context.resources.displayMetrics.heightPixels * 0.85).toInt()
+      (context.resources.displayMetrics.heightPixels * 0.95).toInt()
     )
   }
 
@@ -152,6 +152,11 @@ class ChannelListDialog(
       R.id.tv_group.onClick {
         setChecked(modelPosition, true)
       }
+    }
+
+    binding.btnBack.isVisible = !isTv(context)
+    binding.btnBack.setOnClickListener {
+      dismiss()
     }
   }
 
