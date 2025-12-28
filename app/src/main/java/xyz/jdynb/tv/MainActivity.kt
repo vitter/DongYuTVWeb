@@ -1,6 +1,5 @@
 package xyz.jdynb.tv
 
-import android.app.ProgressDialog
 import android.media.AudioManager
 import android.util.Log
 import android.view.KeyEvent
@@ -13,37 +12,18 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.drake.engine.base.EngineActivity
-import com.norman.webviewup.lib.UpgradeCallback
-import com.norman.webviewup.lib.WebViewUpgrade
-import com.norman.webviewup.lib.source.download.UpgradeDownloadSource
 import kotlinx.coroutines.launch
-import xyz.jdynb.tv.DongYuTVApplication.Companion.context
 import xyz.jdynb.tv.databinding.ActivityMainBinding
 import xyz.jdynb.tv.dialog.ChannelListDialog
 import xyz.jdynb.tv.fragment.LivePlayerFragment
 import xyz.jdynb.tv.fragment.YspLivePlayerFragment
-import java.io.File
+import xyz.jdynb.tv.utils.WebViewUpgrade
 
 class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main) {
 
   companion object {
 
     private const val TAG = "MainActivity"
-
-    private const val WEBVIEW_MIN_VERSION = 106
-
-    /**
-     * WebView 内核下载地址
-     *
-     * 这个文件只支持 arm64v8a,arm64v7a android 6 以上系统
-     */
-    private const val WEBVIEW_DOWNLOAD_URL =
-      "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/iWgPm3ep91be"
-
-    /**
-     * WebView 内核文件名
-     */
-    private const val WEBVIEW_FILE_NAME = "com.google.android.webview_106.0.5249.65-524906503.apk"
   }
 
   private val livePlayerFragment: LivePlayerFragment = YspLivePlayerFragment()
@@ -71,72 +51,9 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
     channelListDialog = ChannelListDialog(this, mainViewModel)
 
-    val systemWebViewPackageName = WebViewUpgrade.getSystemWebViewPackageName()
-    val systemWebViewPackageVersion = WebViewUpgrade.getSystemWebViewPackageVersion()
-
-    Log.i(TAG, "systemWebViewPackageName: $systemWebViewPackageName, $systemWebViewPackageVersion")
-
-    val index = systemWebViewPackageVersion.indexOf(".")
-    if (index > 0) {
-      val version = systemWebViewPackageVersion.substring(0, index).toInt()
-      if (version < WEBVIEW_MIN_VERSION) {
-        val upgradeSource = UpgradeDownloadSource(
-          context,
-          WEBVIEW_DOWNLOAD_URL,
-          File(filesDir, WEBVIEW_FILE_NAME)
-        )
-        Log.i(TAG, "start upgrade: $version")
-        WebViewUpgrade.upgrade(upgradeSource)
-
-        var progressDialog: ProgressDialog? = null
-
-        WebViewUpgrade.addUpgradeCallback(object : UpgradeCallback {
-          override fun onUpgradeComplete() {
-            Log.i(TAG, "onUpgradeComplete")
-            progressDialog?.dismiss()
-            Toast.makeText(this@MainActivity, "内核更新完成！", Toast.LENGTH_LONG).show()
-
-            initLivePlayerFragment()
-          }
-
-          override fun onUpgradeError(throwable: Throwable?) {
-            Log.i(TAG, "throwable: $throwable")
-            Toast.makeText(
-              this@MainActivity,
-              "内核更新错误: ${throwable?.message}",
-              Toast.LENGTH_LONG
-            ).show()
-            progressDialog?.dismiss()
-          }
-
-          override fun onUpgradeProcess(percent: Float) {
-            Log.i(TAG, "onUpgradeProcess: $percent")
-            if (progressDialog == null) {
-              progressDialog = ProgressDialog(this@MainActivity)
-                .apply {
-                  setTitle("正在下载内核...")
-                  setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-                  setCancelable(false)
-                  setCanceledOnTouchOutside(false)
-                  show()
-                }
-            }
-
-            progressDialog.progress = (percent * 100).toInt()
-          }
-        })
-
-        if (WebViewUpgrade.isCompleted()) {
-          initLivePlayerFragment()
-        }
-
-        return
-      }
+    WebViewUpgrade.initWebView(this) {
+      initLivePlayerFragment()
     }
-
-    Log.i(TAG, "WebView Version > 106, no need to upgrade")
-
-    initLivePlayerFragment()
   }
 
   private fun initLivePlayerFragment() {
