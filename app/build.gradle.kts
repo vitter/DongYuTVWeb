@@ -56,13 +56,6 @@ android {
     jvmTarget = "11"
   }
 
-  packagingOptions{
-    doNotStrip("*/.so")
-    jniLibs {
-      useLegacyPackaging = true
-    }
-  }
-
   aaptOptions {
     noCompress("apk")
   }
@@ -92,7 +85,7 @@ dependencies {
   implementation("io.github.jonanorman.android.webviewup:core:0.1.0")
   implementation("io.github.jonanorman.android.webviewup:download-source:0.1.0")
   implementation(libs.androidx.localbroadcastmanager)
-  implementation(files("libs/tbs_sdk-44382-202411081743-release.aar"))
+  // implementation(files("libs/tbs_sdk-44382-202411081743-release.aar"))
   // implementation("com.github.HeartHappy.webX5Core:webx5core_arm64_v8a:1.0.2")
   // implementation(project(":x5core_arm64_v8a"))
   // implementation("com.tencent.tbs:tbssdk:44286")

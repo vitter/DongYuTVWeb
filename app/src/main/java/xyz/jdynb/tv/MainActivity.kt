@@ -1,5 +1,6 @@
 package xyz.jdynb.tv
 
+import android.app.ProgressDialog
 import android.media.AudioManager
 import android.util.Log
 import android.view.KeyEvent
@@ -14,14 +15,13 @@ import androidx.lifecycle.lifecycleScope
 import com.drake.engine.base.EngineActivity
 import com.norman.webviewup.lib.UpgradeCallback
 import com.norman.webviewup.lib.WebViewUpgrade
-import com.norman.webviewup.lib.source.UpgradeAssetSource
+import com.norman.webviewup.lib.source.download.UpgradeDownloadSource
 import kotlinx.coroutines.launch
 import xyz.jdynb.tv.DongYuTVApplication.Companion.context
 import xyz.jdynb.tv.databinding.ActivityMainBinding
 import xyz.jdynb.tv.dialog.ChannelListDialog
 import xyz.jdynb.tv.fragment.LivePlayerFragment
 import xyz.jdynb.tv.fragment.YspLivePlayerFragment
-import xyz.jdynb.tv.utils.isTv
 import java.io.File
 
 class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main) {
@@ -57,6 +57,68 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
     channelListDialog = ChannelListDialog(this, mainViewModel)
 
+
+    val systemWebViewPackageName = WebViewUpgrade.getSystemWebViewPackageName()
+    val systemWebViewPackageVersion = WebViewUpgrade.getSystemWebViewPackageVersion()
+
+    Log.i(TAG, "systemWebViewPackageName: $systemWebViewPackageName, $systemWebViewPackageVersion")
+
+    val index = systemWebViewPackageVersion.indexOf(".")
+    if (index > 0) {
+      val version = systemWebViewPackageVersion.substring(0, index).toInt()
+      if (version > 106) {
+        val upgradeSource = UpgradeDownloadSource(
+          context,
+          "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/iWgPm3ep91be",
+          File(filesDir, "webview-core/com.google.android.webview_106.0.5249.65-524906503(arm-v8a+arm64-v7a).apk")
+        )
+        Log.i(TAG, "start upgrade: $version")
+        WebViewUpgrade.upgrade(upgradeSource)
+
+        var progressDialog: ProgressDialog? = null
+
+        WebViewUpgrade.addUpgradeCallback(object : UpgradeCallback {
+          override fun onUpgradeComplete() {
+            Log.i(TAG, "onUpgradeComplete")
+            progressDialog?.dismiss()
+            Toast.makeText(this@MainActivity, "内核更新完成！", Toast.LENGTH_LONG).show()
+
+            initLivePlayerFragment()
+          }
+
+          override fun onUpgradeError(throwable: Throwable?) {
+            Log.i(TAG, "throwable: $throwable")
+            Toast.makeText(this@MainActivity, "内核更新错误: ${throwable?.message}", Toast.LENGTH_LONG).show()
+            progressDialog?.dismiss()
+          }
+
+          override fun onUpgradeProcess(percent: Float) {
+            Log.i(TAG, "onUpgradeProcess: $percent")
+            if (progressDialog == null) {
+              progressDialog = ProgressDialog(this@MainActivity)
+                .apply {
+                  setTitle("正在下载内核...")
+                  show()
+                }
+            }
+            progressDialog.progress = (percent * 100).toInt()
+          }
+        })
+
+        if (WebViewUpgrade.isCompleted()) {
+          initLivePlayerFragment()
+        }
+
+        return
+      }
+    }
+
+    Log.i(TAG, "WebView Version > 106, no need to upgrade")
+
+    initLivePlayerFragment()
+  }
+
+  private fun initLivePlayerFragment() {
     supportFragmentManager.beginTransaction()
       .replace(R.id.fragment, livePlayerFragment)
       .commitNow()

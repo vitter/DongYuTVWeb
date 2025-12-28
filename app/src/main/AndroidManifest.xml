@@ -21,11 +21,11 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
-        android:extractNativeLibs="true"
         android:name=".DongYuTVApplication"
         android:allowBackup="true"
         android:banner="@drawable/ic_launcher_background"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:extractNativeLibs="true"
         android:fullBackupContent="@xml/backup_rules"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
@@ -33,9 +33,9 @@
         android:preserveLegacyExternalStorage="true"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.DongYuTvWeb"
+        android:usesCleartextTraffic="true"
         tools:targetApi="30">
         <activity
             android:name=".MainActivity"
@@ -48,13 +48,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <meta-data android:name="com.tencent.smtt.multiprocess.NUM_PRIVILEGED_SERVICES" android:value="1" />
-        <service
-            android:name="com.tencent.smtt.services.ChildProcessService$Privileged0"
-            android:exported="false"
-            android:isolatedProcess="false"
-            android:process=":privileged_process0" />
 
     </application>
 
