@@ -1,7 +1,6 @@
 package xyz.jdynb.tv
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
@@ -24,15 +25,16 @@ import xyz.jdynb.music.utils.SpUtils.get
 import xyz.jdynb.music.utils.SpUtils.getRequired
 import xyz.jdynb.music.utils.SpUtils.put
 import xyz.jdynb.tv.constants.SPKeyConstants
+import xyz.jdynb.tv.enums.LivePlayer
+import xyz.jdynb.tv.fragment.LivePlayerFragment
 import xyz.jdynb.tv.model.LiveChannelGroupModel
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.utils.JsManager
-import xyz.jdynb.tv.utils.isTv
 import java.nio.charset.StandardCharsets
 
 class MainViewModel : ViewModel() {
 
-  private var _currentIndex = MutableStateFlow(SPKeyConstants.CURRENT_INDEX.getRequired(0))
+  private val _currentIndex = MutableStateFlow(SPKeyConstants.CURRENT_INDEX.getRequired(0))
 
   /**
    *  当前直播的索引位置，默认为 0
@@ -44,14 +46,14 @@ class MainViewModel : ViewModel() {
    */
   private var beforeIndex = currentIndex.value
 
-  private var _channelModelList = MutableStateFlow<List<LiveChannelModel>>(emptyList())
+  private val _channelModelList = MutableStateFlow<List<LiveChannelModel>>(emptyList())
 
   /**
    * 频道列表
    */
   val channelModelList = _channelModelList.asStateFlow()
 
-  private var _channelGroupModelList = MutableStateFlow<List<LiveChannelGroupModel>>(emptyList())
+  private val _channelGroupModelList = MutableStateFlow<List<LiveChannelGroupModel>>(emptyList())
 
   /**
    * 频道分组列表
@@ -110,6 +112,9 @@ class MainViewModel : ViewModel() {
       getInitialChannelModel()
     )
 
+  /**
+   * 初始化 js 脚本和频道数据
+   */
   private suspend fun init() = withContext(Dispatchers.IO) {
     JsManager.init(DongYuTVApplication.context)
     DongYuTVApplication.context.assets.open("lives_ysp.json").use { stream ->
@@ -126,6 +131,9 @@ class MainViewModel : ViewModel() {
       }
   }
 
+  /**
+   * 获取初始化默认的频道
+   */
   private fun getInitialChannelModel(): LiveChannelModel {
     return SPKeyConstants.CURRENT_CHANNEL.get<String?>()?.let {
       runCatching {
@@ -134,7 +142,15 @@ class MainViewModel : ViewModel() {
     } ?: LiveChannelModel()
   }
 
-  private var _showCurrentChannel = MutableStateFlow(true)
+  /**
+   * 通过渠道获取到对应的 Fragment
+   */
+  @Suppress("UNCHECKED_CAST")
+  private fun getFragmentClassForChannel(channelType: String): Class<LivePlayerFragment> {
+    return LivePlayer.getLivePlayerForChannelType(channelType).clazz as Class<LivePlayerFragment>
+  }
+
+  private val _showCurrentChannel = MutableStateFlow(true)
 
   /**
    * 是否显示当前频道信息
@@ -142,7 +158,16 @@ class MainViewModel : ViewModel() {
   val showCurrentChannel = _showCurrentChannel.asStateFlow()
 
   private var _currentGroup = MutableStateFlow("")
+
+  /**
+   * 当前频道渠道类型分组
+   */
   val currentGroup = _currentGroup.asStateFlow()
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  val currentFragment = currentGroup.filter { it.isNotEmpty() }.flatMapConcat {
+    flowOf(getFragmentClassForChannel(it))
+  }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
   init {
     viewModelScope.launch {
@@ -156,6 +181,7 @@ class MainViewModel : ViewModel() {
     viewModelScope.launch {
       showActions.collectLatest {
         if (it) {
+          // 5秒未操作自动隐藏操作栏
           delay(5000)
           showActions(false)
         }
@@ -175,6 +201,9 @@ class MainViewModel : ViewModel() {
     numberStringBuilder.clear()
   }
 
+  /**
+   * 改变当前的频道索引位置
+   */
   fun changeCurrentIndex(currentIndex: Int) {
     _currentIndex.value = currentIndex
   }
@@ -183,10 +212,16 @@ class MainViewModel : ViewModel() {
     _currentGroup.value = currentGroup
   }
 
+  /**
+   * 是否显示当前的频道信息
+   */
   fun showCurrentChannel(show: Boolean) {
     _showCurrentChannel.value = show
   }
 
+  /**
+   * 回滚切台之前的频道索引
+   */
   fun rollbackIndex() {
     _currentIndex.value = beforeIndex
   }
@@ -213,6 +248,9 @@ class MainViewModel : ViewModel() {
     }
   }
 
+  /**
+   * 切台追加输入数字
+   */
   fun appendNumber(number: String) {
     numberStringBuilder.append(number)
 
@@ -227,6 +265,9 @@ class MainViewModel : ViewModel() {
     }
   }
 
+  /**
+   * 显示操作栏
+   */
   fun showActions(show: Boolean = true) {
     _showActions.value = show
   }

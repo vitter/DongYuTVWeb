@@ -28,9 +28,11 @@ import kotlinx.coroutines.launch
 import xyz.jdynb.tv.MainViewModel
 import xyz.jdynb.tv.R
 import xyz.jdynb.tv.databinding.FragmentLivePlayerBinding
+import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.event.Playable
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.model.LivePlayerModel
+import xyz.jdynb.tv.utils.JsManager.execJs
 import java.io.ByteArrayInputStream
 
 open class LivePlayerFragment: Fragment(), Playable {
@@ -106,6 +108,22 @@ open class LivePlayerFragment: Fragment(), Playable {
 
         play(it)
       }
+    }
+  }
+
+  /**
+   * 执行 JS 脚本
+   */
+  fun execJs(jsType: JsType, vararg args: Pair<String, Any>) {
+    webView.execJs(jsType, *args)
+  }
+
+  /**
+   * 批量执行 JS 脚本
+   */
+  fun execJs(vararg args: Pair<JsType, Array<Pair<String, Any>>?>) {
+    args.forEach {
+      webView.execJs(it.first, *(it.second ?: arrayOf()))
     }
   }
 

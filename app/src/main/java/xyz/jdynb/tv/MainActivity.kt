@@ -1,6 +1,7 @@
 package xyz.jdynb.tv
 
 import android.media.AudioManager
+import android.os.Build
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -10,13 +11,13 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.drake.engine.base.EngineActivity
 import com.drake.engine.utils.AppUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import xyz.jdynb.tv.databinding.ActivityMainBinding
 import xyz.jdynb.tv.dialog.ChannelListDialog
@@ -25,7 +26,6 @@ import xyz.jdynb.tv.fragment.LivePlayerFragment
 import xyz.jdynb.tv.fragment.YspLivePlayerFragment
 import xyz.jdynb.tv.model.UpdateModel
 import xyz.jdynb.tv.utils.WebViewUpgrade
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -51,11 +51,20 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
   private var lastBackTime = 0L
 
+  private var isUpgrade = false
+
   override fun init() {
     super.init()
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     val insetsController = WindowCompat.getInsetsController(window, window.decorView)
     insetsController.hide(WindowInsetsCompat.Type.systemBars())
+
+    // 判断cpu型号决定需不需要升级
+    isUpgrade = !Build.SUPPORTED_ABIS.any {
+      it.contains("arm64")
+    }
+
+    Log.i(TAG, "abi: ${Build.SUPPORTED_ABIS.joinToString(",")}")
 
     audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
   }
@@ -66,9 +75,7 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
     channelListDialog = ChannelListDialog(this, mainViewModel)
 
-    WebViewUpgrade.initWebView(this) {
-      initLivePlayerFragment()
-    }
+    // initLivePlayerFragment()
   }
 
   private fun initLivePlayerFragment() {
@@ -87,6 +94,43 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
     lifecycleScope.launch {
       checkUpdate()
     }
+
+    lifecycleScope.launch {
+      mainViewModel.currentFragment.collect { clazz ->
+        clazz ?: return@collect
+
+        if (isUpgrade) {
+          showFragment(clazz)
+        } else {
+          isUpgrade = true
+          WebViewUpgrade.initWebView(this@MainActivity) {
+            showFragment(clazz)
+          }
+        }
+      }
+    }
+  }
+
+  private fun showFragment(fragmentClazz: Class<LivePlayerFragment>) {
+    val transaction = supportFragmentManager.beginTransaction()
+    val tag = fragmentClazz.name
+    val livePlayerFragment = supportFragmentManager
+      .findFragmentByTag(tag) as? LivePlayerFragment
+    val target = livePlayerFragment ?: (supportFragmentManager.fragmentFactory.instantiate(
+      fragmentClazz.classLoader!!,
+      tag
+    ))
+    supportFragmentManager.fragments.forEach {
+      if (it != null && it != target && it.isAdded && it.id == R.id.fragment) {
+        transaction.hide(it)
+      }
+    }
+    if (target.isAdded) {
+      transaction.show(target)
+    } else {
+      transaction.add(R.id.fragment, target, tag)
+    }
+    transaction.commitNow()
   }
 
   private suspend fun checkUpdate() {
@@ -96,7 +140,7 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
           URL(CHECK_UPDATE_URL).openConnection() as HttpURLConnection
         connection.inputStream.use { inputStream ->
           val content = inputStream.readBytes().toString(StandardCharsets.UTF_8)
-          Log.i(TAG,"content: $content")
+          Log.i(TAG, "content: $content")
           val json = Json {
             ignoreUnknownKeys = true
             encodeDefaults = true

@@ -8,6 +8,9 @@ import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.utils.JsManager.execJs
 
+/**
+ * 央视频直播播放器实现
+ */
 class YspLivePlayerFragment : LivePlayerFragment() {
 
   companion object {
@@ -30,7 +33,7 @@ class YspLivePlayerFragment : LivePlayerFragment() {
    * @param  channel 直播频道
    */
   override fun play(channel: LiveChannelModel) {
-    webView.execJs(JsType.PLAY_YSP, "pid" to channel.pid, "vid" to channel.streamId)
+    execJs(JsType.PLAY_YSP, "pid" to channel.pid, "vid" to channel.streamId)
   }
 
   /**
@@ -38,7 +41,7 @@ class YspLivePlayerFragment : LivePlayerFragment() {
    */
   override fun playOrPause() {
     Log.i(TAG, "playOrPause")
-    webView.execJs(JsType.PLAY_PAUSE_YSP)
+    execJs(JsType.PLAY_PAUSE_YSP)
   }
 
   /**
@@ -48,12 +51,14 @@ class YspLivePlayerFragment : LivePlayerFragment() {
    */
   override fun onPageFinished(url: String) {
     val currentChannelModel = mainViewModel.currentChannelModel.value
-    webView.execJs(JsType.CLEAR_YSP)
-    webView.execJs(JsType.FULLSCREEN_YSP)
-    webView.execJs(
-      JsType.PLAY_YSP,
-      "pid" to currentChannelModel.pid,
-      "vid" to currentChannelModel.streamId
+
+    execJs(
+      JsType.CLEAR_YSP to null,
+      JsType.FULLSCREEN_YSP to null,
+      JsType.PLAY_YSP to arrayOf(
+        "pid" to currentChannelModel.pid,
+        "vid" to currentChannelModel.streamId
+      )
     )
   }
 
