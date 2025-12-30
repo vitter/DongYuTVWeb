@@ -31,10 +31,10 @@
       "id": "hongkong",
       "name": "simple",
       "script": {
-        "init": [],
-        "play": [
+        "init": [
           "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/hongkong/play.js"
         ],
+        "play": [],
         "resume_pause": []
       }
     }
