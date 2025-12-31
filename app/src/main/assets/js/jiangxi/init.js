@@ -45,7 +45,7 @@ function getJiangXiLiveUrl(m3u8) {
           t: now,
           stream: m3u8,
           uuid: "04206c0b50f5"
-      }
+      },
       "method": "POST"
     }).then(res => {
       return res.json()

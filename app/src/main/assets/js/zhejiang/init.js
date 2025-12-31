@@ -48,7 +48,7 @@ function getAuthKey(videoUrl) {
   const url = new URL(videoUrl)
   const param = _hashParams[url.host]
   const e = param.timestamp || Math.floor(Date.now() / 1e3)
-  const r = cryptoJs.MD5(`${url.pathname}-${e}-${param.rand}-${param.uid}-${param.key}`)
+  const r = CryptoJS.MD5(`${url.pathname}-${e}-${param.rand}-${param.uid}-${param.key}`)
   return `${e}-${param.rand}-${param.uid}-${r}`
 }
 

@@ -54,4 +54,8 @@ function getShanDongLiveUrl(channelId) {
     })
 }
 
-getShanDongLiveUrl('{{channelId}}')
+const channelId = '{{channelId}}'
+
+console.log('channelId:' + channelId)
+
+getShanDongLiveUrl(channelId)
