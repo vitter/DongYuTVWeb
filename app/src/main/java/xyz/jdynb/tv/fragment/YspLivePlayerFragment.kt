@@ -1,8 +1,8 @@
 package xyz.jdynb.tv.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.webkit.WebResourceResponse
 import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.model.LiveChannelModel
 
@@ -24,6 +24,7 @@ class YspLivePlayerFragment : LivePlayerFragment() {
   }
 
   override fun onLoadUrl(url: String?) {
+    Log.i(TAG, "url: $url?pid=${mainViewModel.currentChannelModel.value!!.pid}")
     webView.loadUrl("${url}?pid=${mainViewModel.currentChannelModel.value!!.pid}")
   }
 
@@ -33,6 +34,7 @@ class YspLivePlayerFragment : LivePlayerFragment() {
    * @param  channel 直播频道
    */
   override fun play(channel: LiveChannelModel) {
+    Log.i(TAG, "play: $channel")
     execJs(JsType.PLAY, "pid" to channel.pid, "streamId" to channel.streamId)
   }
 
@@ -49,14 +51,15 @@ class YspLivePlayerFragment : LivePlayerFragment() {
    * @param url 加载的 url
    */
   override fun onPageFinished(url: String) {
-    // val currentChannelModel = mainViewModel.currentChannelModel.value
+    val currentChannelModel = mainViewModel.currentChannelModel.value ?: return
+    super.onPageFinished(url)
 
-    execJs(
-      JsType.INIT to null,
-      /*JsType.PLAY to arrayOf(
-        "pid" to currentChannelModel.pid,
-        "vid" to currentChannelModel.streamId
-      )*/
-    )
+    /*requireContext().assets.open("js/ysp/init.js").use {
+      it.readBytes().toString(Charsets.UTF_8)
+    }.let {
+      val js = it.replace("{{pid}}", currentChannelModel.pid.toString())
+        .replace("{{streamId}}", currentChannelModel.streamId.toString())
+      webView.evaluateJavascript(js, null)
+    }*/
   }
 }

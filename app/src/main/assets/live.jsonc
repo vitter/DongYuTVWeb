@@ -13,7 +13,7 @@
         // 是否异步执行脚本（同步的话脚本会顺序执行）
         // 页面加载完成初始化后需要执行的脚本
         "init": [
-          "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/ysp/clear.js"
+          "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/ysp/init.js"
         ],
         // 指定频道播放时需要执行的脚本
         "play": [

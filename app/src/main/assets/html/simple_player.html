@@ -115,22 +115,5 @@
             video.play();
         }
     }
-
-    function playLiveWithHeaders(url, headers) {
-        console.log('headers:' + headers)
-        fetch(url, {
-          headers,
-        })
-        .then(response => response.blob())
-        .then(blob => {
-          console.log(blob);
-
-            const url = URL.createObjectURL(blob);
-            console.log('blob:' + url);
-            video.src = url;
-            video.play()
-
-        })
-    }
 </script>
 </html>
