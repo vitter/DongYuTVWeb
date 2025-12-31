@@ -95,8 +95,24 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
     }
 
     lifecycleScope.launch {
-      mainViewModel.currentFragment.collect { clazz ->
+      mainViewModel.currentChannelType.collect {
+        if (it.isEmpty()) return@collect
+        val fragmentClazz = mainViewModel
+          .getFragmentClassForChannel(mainViewModel.currentChannelModel.value!!)
+        Log.i(TAG, "showFragment: $fragmentClazz")
+
+        if (isUpgrade || BuildConfig.DEBUG) {
+          showFragment(fragmentClazz)
+        } else {
+          isUpgrade = true
+          WebViewUpgrade.initWebView(this@MainActivity) {
+            showFragment(fragmentClazz)
+          }
+        }
+      }
+      /*mainViewModel.currentFragment.collect { clazz ->
         clazz ?: return@collect
+        Log.i(TAG, "showFragment: $clazz")
 
         if (isUpgrade || BuildConfig.DEBUG) {
           showFragment(clazz)
@@ -106,20 +122,21 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
             showFragment(clazz)
           }
         }
-      }
+      }*/
     }
   }
 
   private fun showFragment(fragmentClazz: Class<LivePlayerFragment>) {
     val transaction = supportFragmentManager.beginTransaction()
     val tag = fragmentClazz.name
-    val livePlayerFragment = supportFragmentManager
+    val target = fragmentClazz.getDeclaredConstructor().newInstance()
+    /*val livePlayerFragment = supportFragmentManager
       .findFragmentByTag(tag) as? LivePlayerFragment
     val target = livePlayerFragment ?: (supportFragmentManager.fragmentFactory.instantiate(
       fragmentClazz.classLoader!!,
       tag
     ))
-    /*supportFragmentManager.fragments.forEach {
+    supportFragmentManager.fragments.forEach {
       if (it != null && it != target && it.isAdded && it.id == R.id.fragment) {
         transaction.hide(it)
       }

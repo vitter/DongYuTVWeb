@@ -3,7 +3,7 @@
 /**
 * 初始化获取直播列表
 */
-async function initHenanLiveList() {
+window.initHenanLiveList = async function() {
     const now = Date.now().toString().slice(0, 10)
 
     const options = {
@@ -34,10 +34,13 @@ async function initHenanLiveList() {
       .catch(error => console.log('error', error));
 }
 
-(async function() {
+async function initHenanTV() {
     // 进行初始化操作
     await initHenanLiveList()
+
     // 通过频道名称取值
     const channelItem = window.channelList_henan.find(item => item.name === '{{channelName}}')
     playLive(channelItem.streams[0])
-})();
+}
+
+initHenanTV()

@@ -73,6 +73,8 @@ abstract class LivePlayerFragment: Fragment(), Playable {
    */
   lateinit var playerConfig: LiveModel.Player
 
+  protected var isPageFinished = false
+
   inner class VideoJavaScriptInterface {
     /**
      * 视频播放事件
@@ -128,6 +130,10 @@ abstract class LivePlayerFragment: Fragment(), Playable {
         if (mainViewModel.isTypingNumber()) {
           delay(4000L)
           mainViewModel.clearInputNumber()
+        }
+
+        if (!isPageFinished) {
+          return@collectLatest
         }
 
         play(it)
@@ -341,11 +347,13 @@ abstract class LivePlayerFragment: Fragment(), Playable {
       override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         // 页面开始加载
         super.onPageStarted(view, url, favicon)
+        isPageFinished = false
       }
 
       override fun onPageFinished(view: WebView, url: String) {
         // 页面加载完成
         super.onPageFinished(view, url)
+        isPageFinished = true
         onPageFinished(url)
       }
     }
