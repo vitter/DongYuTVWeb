@@ -50,6 +50,18 @@
         ],
         "resume_pause": []
       }
+    },
+    {
+      "id": "henan",
+      "name": "simple",
+      "script": {
+        "init": [
+          "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/henan/init.js"
+        ],
+        "play": [
+          "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/henan/play.js"
+        ]
+      }
     }
   ],
   // 播放频道列表
@@ -557,6 +569,29 @@
           "number": 71
         }
       ]
+    },
+    {
+      "channelType": "河南卫视",
+      "player": "henan",
+      "channelList": [
+        { "number": 72, "channelName": "河南卫视" },
+        { "number": 73, "channelName": "新闻频道" },
+        { "number": 74, "channelName": "都市频道" },
+        { "number": 75, "channelName": "民生频道" },
+        { "number": 76, "channelName": "法治频道" },
+        { "number": 77, "channelName": "公共频道" },
+        { "number": 78, "channelName": "河南乡村频道" },
+        { "number": 79, "channelName": "电视剧频道" },
+        { "number": 80, "channelName": "梨园频道" },
+        { "number": 81, "channelName": "文物宝库" },
+        { "number": 82, "channelName": "武术频道" },
+        { "number": 83, "channelName": "睛彩中原" },
+        { "number": 84, "channelName": "移动戏曲频道" },
+        { "number": 85, "channelName": "象视界" },
+        { "number": 86, "channelName": "国学频道" },
+        { "number": 87, "channelName": "欢腾购物" }
+      ]
+
     }
   ]
 }

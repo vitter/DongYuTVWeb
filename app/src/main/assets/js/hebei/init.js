@@ -1,3 +1,5 @@
+// 河北卫视
+
 (function() {
     window.addLiveUrlQuery = function (obj) {
        let ts = parseInt(new Date().getTime() / (1000)) + (7200);
@@ -22,7 +24,7 @@
       return res.json()
     }).then(res => {
         const news = res.returnData.news
-        window.channelList = news.map(item => {
+        window.channelList_hebei = news.map(item => {
             return {
                 title: item.title,
                 liveVideo: item.liveVideo,
@@ -30,7 +32,7 @@
             }
         })
 
-        const channelItem = window.channelList.find(item => item.title === '{{channelName}}')
+        const channelItem = window.channelList_hebei.find(item => item.title === '{{channelName}}')
         const playUrl = window.addLiveUrlQuery(channelItem)
         playLive(playUrl)
     })

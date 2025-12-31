@@ -23,7 +23,7 @@
 
 频道完整配置文件 `main/assets/live.jsonc` [live.jsonc](https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/live.jsonc)
 
-1. 对于普通不懂开发的用户
+### 1. 对于普通不懂开发的用户
 
 修改 channel 频道列表
 
@@ -53,7 +53,7 @@
 
 > 注意上方的 `liveUrl` 只能是普通的 m3u8地址，并且没有带时间戳等相关的参数
 
-2. 对于开发人员
+### 2. 对于开发人员
 
 有些直播地址是有验证参数的，需要在脚本中进行处理生成
 
@@ -82,7 +82,7 @@
 }
 ```
 
-修改 `player` 配置
+### 修改 `player` 配置
 
 ```json
 {
@@ -102,7 +102,7 @@
 }
 ```
 
-编辑 js 脚本
+### 编辑 js 脚本
 
 > 不需要云服务器，在 gitee 上建一个仓库，上面脚本地址自己写上仓库中实际的地址即可，具体格式参照上面的
 
@@ -114,7 +114,7 @@
 
 > `playLive` 是内置的方法，可以直接调用传入地址进行播放
 
-`init.js`, 对应上面 init 执行的脚本
+#### `init.js`, 对应上面 init 执行的脚本
 
 ```js
 (function() {
@@ -160,7 +160,7 @@
 })();
 ```
 
-`play.js` 处理播放
+#### `play.js` 处理播放
 
 ```
 (function() {
@@ -170,7 +170,7 @@
 })();
 ```
 
-simple 播放器内置的 html 代码
+### simple 播放器内置的 html 代码
 
 ```html
 <!doctype html>
