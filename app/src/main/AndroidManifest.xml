@@ -73,6 +73,13 @@
             </intent-filter>
         </receiver>
 
+        <meta-data android:name="com.tencent.smtt.multiprocess.NUM_PRIVILEGED_SERVICES" android:value="1" />
+        <service
+            android:name="com.tencent.smtt.services.ChildProcessService$Privileged0"
+            android:exported="false"
+            android:isolatedProcess="false"
+            android:process=":privileged_process0" />
+
     </application>
 
 </manifest>

@@ -35,6 +35,9 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
     private const val TAG = "MainActivity"
 
+    /**
+     * 检查更新地址
+     */
     private const val CHECK_UPDATE_URL =
       "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/version.json"
 
@@ -48,8 +51,14 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
   private lateinit var audioManager: AudioManager
 
+  /**
+   * 最后一次按下返回键的时间
+   */
   private var lastBackTime = 0L
 
+  /**
+   * 是否已经更新内核了
+   */
   private var isUpgrade = false
 
   override fun init() {
@@ -102,19 +111,6 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
           }
         }
       }
-      /*mainViewModel.currentFragment.collect { clazz ->
-        clazz ?: return@collect
-        Log.i(TAG, "showFragment: $clazz")
-
-        if (isUpgrade || BuildConfig.DEBUG) {
-          showFragment(clazz)
-        } else {
-          isUpgrade = true
-          WebViewUpgrade.initWebView(this@MainActivity) {
-            showFragment(clazz)
-          }
-        }
-      }*/
     }
   }
 

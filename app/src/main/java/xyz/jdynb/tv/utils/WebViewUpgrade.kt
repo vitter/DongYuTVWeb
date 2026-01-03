@@ -3,9 +3,13 @@ package xyz.jdynb.tv.utils
 import android.app.ProgressDialog
 import android.content.Context
 import android.util.Log
+import android.webkit.WebView
 import android.widget.Toast
 import com.norman.webviewup.lib.UpgradeCallback
 import com.norman.webviewup.lib.WebViewUpgrade
+import com.norman.webviewup.lib.reflect.RuntimeAccess
+import com.norman.webviewup.lib.service.interfaces.IServiceManager
+import com.norman.webviewup.lib.service.interfaces.IWebViewUpdateService
 import com.norman.webviewup.lib.source.download.UpgradeDownloadSource
 import xyz.jdynb.tv.DongYuTVApplication
 import java.io.File
@@ -15,7 +19,7 @@ object WebViewUpgrade {
   /**
    * 最低支持的 WebView 版本
    */
-  private const val WEBVIEW_MIN_VERSION = 106
+  private const val WEBVIEW_MIN_VERSION = 75
 
   /**
    * WebView 内核下载地址
@@ -32,9 +36,32 @@ object WebViewUpgrade {
 
   private const val TAG = "WebViewUpgrade"
 
+  fun getCurrentLocalWebViewVersion(): String? {
+    try {
+      val serviceManager = RuntimeAccess.staticAccess(IServiceManager::class.java)
+      val binder = serviceManager.getService(IWebViewUpdateService.SERVICE)
+      var service =
+        RuntimeAccess.staticAccess(IWebViewUpdateService::class.java)
+      val iInterface = service.asInterface(binder)
+      service = RuntimeAccess.objectAccess(
+        IWebViewUpdateService::class.java,
+        iInterface
+      )
+      if (service != null) {
+        return service.currentWebViewPackage?.versionName
+      }
+    } catch (e: Throwable) {
+      Log.e(TAG, "error: $e")
+    }
+    return null
+  }
+
   fun getWebViewVersionNumber(): Int {
     val systemWebViewPackageVersion = WebViewUpgrade.getSystemWebViewPackageVersion()
-    Log.i(TAG, "version: $systemWebViewPackageVersion")
+    Log.i(TAG, "version: $systemWebViewPackageVersion, system: ${getCurrentLocalWebViewVersion()}")
+    if (systemWebViewPackageVersion.isNullOrEmpty()) {
+      return Int.MAX_VALUE
+    }
     val index = systemWebViewPackageVersion.indexOf(".")
     if (index > 0) {
       val version = systemWebViewPackageVersion.substring(0, index).toInt()
@@ -94,12 +121,15 @@ object WebViewUpgrade {
         })
 
         if (WebViewUpgrade.isCompleted()) {
+          Log.i(TAG, "WebView Upgrade completed")
           callback()
         }
       } else {
+        Log.i(TAG, "WebView version: $version >= $WEBVIEW_MIN_VERSION")
         callback()
       }
     } catch (e: Exception){
+      Log.e(TAG, "更新发生异常: $e")
       Toast.makeText(context, "内核更新错误: ${e.message}", Toast.LENGTH_LONG).show()
       callback()
     }

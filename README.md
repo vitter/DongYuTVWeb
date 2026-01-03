@@ -16,6 +16,8 @@
 - 右键: 声音加
 - 确定键: 播放/暂停
 - 数字键: 换台
+- 菜单键：选择换台
+- 返回键：返回/退出
 
 > 使用老式的闭路电视操作，适合老人使用！
 
@@ -27,7 +29,7 @@
 
 修改 channel 频道列表
 
-```json
+```json5
 {
     // ...
     "channel": [
@@ -59,7 +61,7 @@
 
 增加自定义频道，修改 `channel` 配置
 
-```json
+```json5
 // 省略其他
 {
   // ...
@@ -84,7 +86,7 @@
 
 ### 修改 `player` 配置
 
-```json
+```json5
 {
   "player": {
     "id": "custom", // 播放器 id，和上面定义的频道 player 参数一致
@@ -162,7 +164,7 @@
 
 #### `play.js` 处理播放
 
-```
+```js
 (function() {
     const channelItem = window.channelList.find(item => item.title === '{{channelName}}')
     const playUrl = window.addLiveUrlQuery(channelItem)

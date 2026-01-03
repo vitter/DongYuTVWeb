@@ -2,7 +2,6 @@ package xyz.jdynb.tv.fragment
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.net.http.SslError
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.activityViewModels
@@ -20,7 +19,6 @@ import com.tencent.smtt.sdk.WebViewClient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import xyz.jdynb.tv.DongYuTVApplication
 import xyz.jdynb.tv.MainViewModel
 import xyz.jdynb.tv.R
 import xyz.jdynb.tv.databinding.FragmentLivePlayerBinding
@@ -29,11 +27,9 @@ import xyz.jdynb.tv.event.Playable
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.model.LiveModel
 import xyz.jdynb.tv.model.LivePlayerModel
-import xyz.jdynb.tv.utils.JsManager.execJs
 import xyz.jdynb.tv.utils.X5JsManager.execJs
 import xyz.jdynb.tv.utils.toArray
 import java.io.ByteArrayInputStream
-import kotlin.getValue
 
 abstract class LivePlayerFragment :
   EngineFragment<FragmentLivePlayerBinding>(R.layout.fragment_live_player), Playable {
@@ -44,8 +40,6 @@ abstract class LivePlayerFragment :
 
     const val USER_AGENT =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-
-    private const val JS_INTERFACE_NAME = "AndroidVideo"
 
   }
 
@@ -76,9 +70,6 @@ abstract class LivePlayerFragment :
 
   @SuppressLint("ClickableViewAccessibility")
   override fun initView() {
-    if (!DongYuTVApplication.isX5CoreInitFinished) {
-      return
-    }
     binding.webview.setOnTouchListener { v, event ->
       // 拦截触摸事件
       true

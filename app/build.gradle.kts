@@ -68,7 +68,7 @@ android {
     }
 
     create("x5") {
-      applicationIdSuffix = ".x5"
+      // applicationIdSuffix = ".x5"
     }
 
     // 限制太多，不支持
@@ -127,12 +127,13 @@ dependencies {
   implementation("io.github.jonanorman.android.webviewup:core:0.1.0")
   implementation("io.github.jonanorman.android.webviewup:download-source:0.1.0")
   implementation(libs.androidx.localbroadcastmanager)
+  "x5Implementation"(files("libs/tbs_sdk-44382-202411081743-release.aar"))
   // "geckoImplementation"("org.mozilla.geckoview:geckoview:93.0.20210927210923")
   // implementation(files("libs/tbs_sdk-44382-202411081743-release.aar"))
-  "x5Implementation"(libs.webx5core.arm64.v8a)
+  // "x5Implementation"(project(":x5core_arm64_v8a"))
   // "x5Implementation"("com.github.HeartHappy.webX5Core:webx5core_armeabi_v7a:1.0.2")
   // implementation(project(":x5core_arm64_v8a"))
-  "x5Implementation"(libs.tbssdk)
+  // "x5Implementation"(libs.tbssdk)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
