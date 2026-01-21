@@ -23,13 +23,14 @@
 
 ## 自定义频道
 
-频道完整配置文件 `main/assets/live.jsonc` [live.jsonc](https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/live.jsonc)
+频道完整配置文件 `main/assets/live-2.jsonc` [live-2.jsonc](https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/live-2.jsonc)
 
 最新调整:
 
 - 去除 `number` 频道号码
+- 变更 `live.jsonc` 为 `live-2.jsonc`
 
-### 1. 对于普通不懂开发的用户
+### 1. 对于没有验证的直播地址
 
 修改 channel 频道列表
 
@@ -212,6 +213,59 @@ playLive(result.data)
     playLive(playUrl)
 })();
 ```
+
+### Base 播放器
+
+对于加密的直播地址，需要使用 Base 播放器，直接通过浏览器加载来实现播放，去除播放器以外的节点，实现全屏播放。
+
+[init.js实现](/app/src/main/assets/js/guangxi/init.js) 全屏并去除其他无用样式进行初始化
+
+[play.js实现](/app/src/main/assets/js/guangxi/play.js) 直接使用 `window.location.href` 进行跳转
+
+[resume_pause.js实现](/app/src/main/assets/js/guangxi/resume_pause.js) 查找按钮并点击
+
+配置参考
+
+> `url` 参数支持动态参数，使用 {{}} 方式传入
+
+```json5
+// player 配置
+{
+  "id": "guangxi",
+  "name": "base", // 指定为 base
+  "url": "https://tv.gxtv.cn/channel/channelivePlay_{{id}}.html", // url 支持动态参数
+  // 设置指定的脚本
+  "script": {
+    "init": ["https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/guangxi/init.js"],
+    "play": ["https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/guangxi/play.js"],
+    "resume_pause": ["https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/js/guangxi/resume_pause.js"]
+  }
+}
+```
+> id 参数会注入到上面 url 的 {{id}} 中
+
+```json5
+// channel 配置
+{
+  "channelType": "广西",
+  "player": "guangxi",
+  "channelList": [
+    {
+      "channelName": "广西卫视",
+      "args": {
+        "id": "e7a7ab7df9fe11e88bcfe41f13b60c62"
+      }
+    },
+    {
+      "channelName": "综艺旅游",
+      "args": {
+        "id": "f3335975f9fe11e88bcfe41f13b60c62"
+      }
+    }
+  ]
+}
+```
+
 
 ### simple 播放器内置的 html 代码
 
