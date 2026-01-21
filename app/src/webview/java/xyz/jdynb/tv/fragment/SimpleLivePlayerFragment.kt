@@ -10,7 +10,7 @@ import xyz.jdynb.tv.bridge.JSBridge
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.utils.NetworkUtils.inputStream
 
-class SimpleLivePlayerFragment : LivePlayerFragment() {
+class SimpleLivePlayerFragment : BaseLivePlayerFragment() {
 
   companion object {
 
@@ -77,17 +77,13 @@ class SimpleLivePlayerFragment : LivePlayerFragment() {
     )
   }
 
-  private val jsBridge by lazy {
-    JSBridge(requireContext())
-  }
-
-  override fun onLoadUrl(url: String?) {
+  override fun onLoadUrl(url: String?, channelModel: LiveChannelModel) {
     webView.loadUrl(PLAYER_URL)
-    webView.addJavascriptInterface(jsBridge, "JSBridge")
+    webView.addJavascriptInterface(JSBridge(requireContext()), "JSBridge")
   }
 
-  override fun onPageFinished(url: String) {
-    super.onPageFinished(url)
+  override fun onPageFinished(url: String, channelModel: LiveChannelModel) {
+    super.onPageFinished(url, channelModel)
 
     // 调试代码
     /*requireContext().assets.open("js/jiangxi/init.js").use {

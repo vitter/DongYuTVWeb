@@ -5,6 +5,7 @@ import android.webkit.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import xyz.jdynb.tv.BuildConfig
 import xyz.jdynb.tv.DongYuTVApplication
 import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.model.LiveModel
@@ -55,6 +56,11 @@ object JsManager {
       }
     }
 
+  suspend fun getJsFromAsset(name: String, type: JsType) = withContext(Dispatchers.IO) {
+    DongYuTVApplication.context.assets.open("js/${name}/${type.type}.js")
+      .readBytes().toString(Charsets.UTF_8)
+  }
+
   private suspend fun getOrWriteJs(url: String, name: String, type: JsType): String? {
     return NetworkUtils.getResponseBody(url)?.also { content ->
       writeJsToLocal(name, type, content)
@@ -75,6 +81,9 @@ object JsManager {
   suspend fun getJsList(playerConfig: LiveModel.Player, type: JsType) =
     withContext(Dispatchers.IO) {
       try {
+        if (BuildConfig.DEBUG) {
+          return@withContext listOf(getJsFromAsset(playerConfig.id, type))
+        }
         val scripts = when (type) {
           JsType.INIT -> playerConfig.script.init
           JsType.PLAY -> playerConfig.script.play
@@ -124,6 +133,7 @@ object JsManager {
             result = result.replace("{{${key}}}", value.toString())
           }
         }
+        Log.i("JsManager", "js: $result")
         evaluateJavascript(result) { i ->
           // Log.i("JsManager", i)
         }

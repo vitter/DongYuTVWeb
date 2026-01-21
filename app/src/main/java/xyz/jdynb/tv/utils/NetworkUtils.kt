@@ -1,6 +1,7 @@
 package xyz.jdynb.tv.utils
 
 import com.drake.engine.utils.EncryptUtil
+import xyz.jdynb.tv.BuildConfig
 import xyz.jdynb.tv.DongYuTVApplication
 import java.io.File
 import java.io.IOException
@@ -53,6 +54,12 @@ object NetworkUtils {
   }
 
   fun getResponseBodyCache(url: String, assetFileName: String? = null): String {
+    // 调试模式下，优先从assets目录读取
+    if (BuildConfig.DEBUG && assetFileName != null) {
+      return DongYuTVApplication.context.assets.open(assetFileName).use {
+        it.readBytes().toString(StandardCharsets.UTF_8)
+      }
+    }
     val md5 = EncryptUtil.encryptMD5ToString(url)
     val file = File(DongYuTVApplication.context.filesDir, md5)
 

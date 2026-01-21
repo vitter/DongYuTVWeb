@@ -1,5 +1,6 @@
 package xyz.jdynb.tv.enums
 
+import xyz.jdynb.tv.fragment.BaseLivePlayerFragment
 import xyz.jdynb.tv.fragment.SimpleLivePlayerFragment
 import xyz.jdynb.tv.fragment.YspLivePlayerFragment
 
@@ -15,15 +16,19 @@ enum class LivePlayer(val player: String, val clazz: Class<*>) {
   /**
    * 简单视频播放器
    */
-  SIMPLE("simple", SimpleLivePlayerFragment::class.java)
+  SIMPLE("simple", SimpleLivePlayerFragment::class.java),
 
+  /**
+   * 通用视频播放器
+   */
+  BASE("base", BaseLivePlayerFragment::class.java)
   ;
 
   companion object {
 
     @JvmStatic
-    fun getLivePlayerForPlayer(player: String): LivePlayer {
-      return LivePlayer.entries.find { it.player == player } ?: YSP
+    fun getLivePlayerForPlayer(player: String): LivePlayer? {
+      return LivePlayer.entries.find { it.player == player }
     }
 
     @JvmStatic

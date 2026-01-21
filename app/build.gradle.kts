@@ -33,8 +33,8 @@ android {
     minSdk = 23
     //noinspection ExpiredTargetSdkVersion
     targetSdk = 28
-    versionCode = 4
-    versionName = "1.0.4"
+    versionCode = 5
+    versionName = "1.0.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     signingConfig = signingConfigs.getByName("debug")
@@ -71,9 +71,9 @@ android {
       // 默认配置
     }
 
-    create("x5") {
-      // applicationIdSuffix = ".x5"
-    }
+    // X5 内核已收费，不支持，如果你有付费的，请开启注释，并按照文档进行配置
+    /*create("x5") {
+    }*/
 
     // 限制太多，不支持
     /*create("gecko") {
@@ -131,7 +131,7 @@ dependencies {
   implementation("io.github.jonanorman.android.webviewup:core:0.1.0")
   implementation("io.github.jonanorman.android.webviewup:download-source:0.1.0")
   implementation(libs.androidx.localbroadcastmanager)
-  "x5Implementation"(files("libs/tbs_sdk-44382-202411081743-release.aar"))
+  // "x5Implementation"(files("libs/tbs_sdk-44382-202411081743-release.aar"))
   // "geckoImplementation"("org.mozilla.geckoview:geckoview:93.0.20210927210923")
   // implementation(files("libs/tbs_sdk-44382-202411081743-release.aar"))
   // "x5Implementation"(project(":x5core_arm64_v8a"))

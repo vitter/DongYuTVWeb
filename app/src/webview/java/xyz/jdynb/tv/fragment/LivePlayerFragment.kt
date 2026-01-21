@@ -64,6 +64,8 @@ abstract class LivePlayerFragment : Fragment(), Playable {
 
   protected val mainViewModel by activityViewModels<MainViewModel>()
 
+  protected val currentChannelModel get() = mainViewModel.currentChannelModel.value!!
+
   /**
    * 播放器名称
    */
@@ -126,7 +128,7 @@ abstract class LivePlayerFragment : Fragment(), Playable {
 
     val url = mainViewModel.liveModel.player.find { it.name == playerName }?.url
     loadUrl = url ?: ""
-    onLoadUrl(url)
+    onLoadUrl(url, currentChannelModel)
 
     viewLifecycleOwner.lifecycleScope.launch {
       mainViewModel.currentChannelModel.collectLatest {
@@ -146,10 +148,28 @@ abstract class LivePlayerFragment : Fragment(), Playable {
     }
   }
 
-  protected open fun onLoadUrl(url: String?) {
-    url ?: return
-    webView.loadUrl(url)
-  }
+  /**
+   * 执行加载 URL
+   *
+   * @param url 加载的 URL
+   * @param channelModel 当前频道信息
+   */
+  abstract fun onLoadUrl(url: String?, channelModel: LiveChannelModel)
+
+  /**
+   * 是否拦截跳转
+   *
+   * @return true 拦截 false 不拦截
+   */
+  abstract fun shouldOverride(url: String): Boolean
+
+  /**
+   * 页面加载完成时的回调
+   *
+   * @param url 加载的 URL
+   * @param channelModel 当前频道信息
+   */
+  abstract fun onPageFinished(url: String, channelModel: LiveChannelModel)
 
   /**
    * 执行 JS 脚本
@@ -169,15 +189,6 @@ abstract class LivePlayerFragment : Fragment(), Playable {
         webView.execJs(playerConfig, it.first, *(it.second ?: arrayOf()))
       }
     }
-  }
-
-  override fun play(channel: LiveChannelModel) {
-    // 默认的播放
-    execJs(JsType.PLAY, *channel.toArray())
-  }
-
-  override fun resumeOrPause() {
-    execJs(JsType.RESUME_PAUSE)
   }
 
   /**
@@ -297,27 +308,6 @@ abstract class LivePlayerFragment : Fragment(), Playable {
   }
 
   /**
-   * 是否拦截跳转
-   *
-   * @return true 拦截 false 不拦截
-   */
-  protected open fun shouldOverride(url: String): Boolean {
-    // 自定义跳转逻辑
-    // 例如：拦截特定协议，打开外部应用等
-
-    Log.i(TAG, "shouldOverride: $url")
-    return false
-  }
-
-  /**
-   * 页面加载完成时的回调
-   */
-  protected open fun onPageFinished(url: String) {
-    // 默认处理
-    execJs(JsType.INIT, *mainViewModel.currentChannelModel.value.toArray())
-  }
-
-  /**
    * WebViewClient 配置
    */
   private fun WebView.setupWebViewClient() {
@@ -363,7 +353,7 @@ abstract class LivePlayerFragment : Fragment(), Playable {
         // 页面加载完成
         super.onPageFinished(view, url)
         isPageFinished = true
-        onPageFinished(url)
+        onPageFinished(url, currentChannelModel)
       }
     }
   }

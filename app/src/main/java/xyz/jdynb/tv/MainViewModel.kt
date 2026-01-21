@@ -44,7 +44,7 @@ class MainViewModel : ViewModel() {
      * 直播配置地址
      */
     private const val LIVE_CONFIG_URL =
-      "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/live.jsonc"
+      "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/app/src/main/assets/live-2.jsonc"
 
   }
 
@@ -135,9 +135,16 @@ class MainViewModel : ViewModel() {
    * 初始化数据
    */
   private suspend fun init() = withContext(Dispatchers.IO) {
-    val liveContent = NetworkUtils.getResponseBodyCache(LIVE_CONFIG_URL, "live.jsonc")
+    val liveContent = NetworkUtils.getResponseBodyCache(LIVE_CONFIG_URL, "live-2.jsonc")
     _liveModel = json.decodeFromString<LiveModel>(liveContent)
-    _channelTypeModelList.value = liveModel.channel.filter { !it.hidden }
+    _channelTypeModelList.value =
+      liveModel.channel.filter {
+        val currentPlayer = liveModel.player.find { player -> player.id == it.player }
+        if (currentPlayer == null) {
+          return@filter false
+        }
+        !it.hidden && LivePlayer.getLivePlayerForPlayer(currentPlayer.name) != null
+      }
     _channelModelList.value = _channelTypeModelList.value.flatMap { liveChannelTypeModel ->
       liveChannelTypeModel.channelList.onEach {
         if (liveChannelTypeModel.hidden != it.hidden) {
@@ -181,10 +188,9 @@ class MainViewModel : ViewModel() {
    * 通过渠道获取到对应的 Fragment
    */
   @Suppress("UNCHECKED_CAST")
-  fun getFragmentClassForChannel(channelModel: LiveChannelModel): Class<LivePlayerFragment> {
-    val name = liveModel.player.find { it.id == channelModel.player }?.name
-      ?: throw IllegalStateException("没有获取到对应的播放器")
-    return LivePlayer.getLivePlayerForPlayer(name).clazz as Class<LivePlayerFragment>
+  fun getFragmentClassForChannel(channelModel: LiveChannelModel): Class<LivePlayerFragment>? {
+    val name = liveModel.player.find { it.id == channelModel.player }?.name ?: return null
+    return LivePlayer.getLivePlayerForPlayer(name)?.clazz as Class<LivePlayerFragment>?
   }
 
   private val _showCurrentChannel = MutableStateFlow(true)

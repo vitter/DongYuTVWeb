@@ -22,7 +22,6 @@ import xyz.jdynb.tv.databinding.ActivityMainBinding
 import xyz.jdynb.tv.dialog.ChannelListDialog
 import xyz.jdynb.tv.dialog.UpdateDialog
 import xyz.jdynb.tv.fragment.LivePlayerFragment
-import xyz.jdynb.tv.fragment.YspLivePlayerFragment
 import xyz.jdynb.tv.model.UpdateModel
 import xyz.jdynb.tv.utils.WebViewUpgrade
 import java.net.HttpURLConnection
@@ -39,11 +38,11 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
      * 检查更新地址
      */
     private const val CHECK_UPDATE_URL =
-      "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/version.json"
+      "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/update.json"
 
   }
 
-  private val livePlayerFragment: LivePlayerFragment = YspLivePlayerFragment()
+  private var livePlayerFragment: LivePlayerFragment? = null
 
   private lateinit var channelListDialog: ChannelListDialog
 
@@ -92,6 +91,7 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
     }
 
     lifecycleScope.launch {
+      // FIXME: 没有电视，不知道更新有没有用
       checkUpdate()
     }
 
@@ -100,6 +100,7 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
         if (it.isEmpty()) return@collect
         val fragmentClazz = mainViewModel
           .getFragmentClassForChannel(mainViewModel.currentChannelModel.value!!)
+          ?: return@collect
         Log.i(TAG, "showFragment: $fragmentClazz")
 
         if (isUpgrade || BuildConfig.DEBUG) {
@@ -118,6 +119,7 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
     val transaction = supportFragmentManager.beginTransaction()
     val tag = fragmentClazz.name
     val target = fragmentClazz.getDeclaredConstructor().newInstance()
+    livePlayerFragment = target
     /*val livePlayerFragment = supportFragmentManager
       .findFragmentByTag(tag) as? LivePlayerFragment
     val target = livePlayerFragment ?: (supportFragmentManager.fragmentFactory.instantiate(
@@ -223,7 +225,7 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
           return true
         }
         Log.d(TAG, "onKeyDown: Ok")
-        livePlayerFragment.resumeOrPause()
+        livePlayerFragment?.resumeOrPause()
       }
 
       // 静音

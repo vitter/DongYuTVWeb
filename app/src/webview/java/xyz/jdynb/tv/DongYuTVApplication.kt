@@ -6,7 +6,6 @@ import android.content.Context
 import com.drake.brv.utils.BRV
 import com.drake.engine.base.Engine
 
-
 class DongYuTVApplication : Application() {
 
   companion object {

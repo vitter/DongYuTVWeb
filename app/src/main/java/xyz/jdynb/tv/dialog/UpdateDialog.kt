@@ -28,6 +28,9 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import kotlin.concurrent.thread
 
+/**
+ * 更新弹窗
+ */
 class UpdateDialog(context: Context, private val updateModel: UpdateModel) :
   EngineDialog<DialogUpdateBinding>(context) {
 

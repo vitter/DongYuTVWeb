@@ -9,7 +9,8 @@ import xyz.jdynb.tv.model.LiveChannelModel
 /**
  * 央视频直播播放器实现
  */
-class YspLivePlayerFragment : LivePlayerFragment() {
+@Deprecated("使用 BaseLivePlayerFragment 替代")
+class YspLivePlayerFragment : BaseLivePlayerFragment() {
 
   companion object {
 
@@ -23,7 +24,7 @@ class YspLivePlayerFragment : LivePlayerFragment() {
     super.onViewCreated(view, savedInstanceState)
   }
 
-  override fun onLoadUrl(url: String?) {
+  override fun onLoadUrl(url: String?, channelModel: LiveChannelModel) {
     Log.i(TAG, "url: $url?pid=${mainViewModel.currentChannelModel.value!!.pid}")
     webView.loadUrl("${url}?pid=${mainViewModel.currentChannelModel.value!!.pid}")
   }
@@ -50,9 +51,9 @@ class YspLivePlayerFragment : LivePlayerFragment() {
    *
    * @param url 加载的 url
    */
-  override fun onPageFinished(url: String) {
+  override fun onPageFinished(url: String, channelModel: LiveChannelModel) {
     val currentChannelModel = mainViewModel.currentChannelModel.value ?: return
-    super.onPageFinished(url)
+    super.onPageFinished(url, channelModel)
 
     /*requireContext().assets.open("js/ysp/init.js").use {
       it.readBytes().toString(Charsets.UTF_8)
