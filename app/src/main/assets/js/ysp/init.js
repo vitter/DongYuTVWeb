@@ -162,11 +162,27 @@ function clearHeader() {
 
 clearHeader()
 
+async function $reloadCurrentPage() {
+     const live = await initLivePlayer()
+     if (!live) {
+        window.location.reload()
+        return
+     }
+     const pid = live.videoConfig.pid
+     const vid = live.videoConfig.vid
+     const url = `https://www.yangshipin.cn/tv/home?pid=${pid}&vid=${vid}`
+     if (url === window.location.href) {
+        window.location.reload()
+     } else {
+        window.location.href = url
+     }
+}
+
 ;(function() {
     window.intervalId = setInterval(() => {
         const html = document.body.innerHTML
         if (html.includes('节目已结束')) {
-            window.location.reload();
+            $reloadCurrentPage()
         }
     }, 3000)
 
@@ -180,7 +196,7 @@ clearHeader()
     if (document.visibilityState == 'visible') {
       console.log('进入')
       if (Date.now() - leaveTime > 15000) {
-        window.location.reload()
+        $reloadCurrentPage()
       }
     }
   })
