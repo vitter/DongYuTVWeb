@@ -80,6 +80,8 @@ abstract class LivePlayerFragment : Fragment(), Playable {
 
   protected var isPageFinished = false
 
+  private var leaveTime = System.currentTimeMillis()
+
   inner class VideoJavaScriptInterface {
     /**
      * 视频播放事件
@@ -421,6 +423,7 @@ abstract class LivePlayerFragment : Fragment(), Playable {
     super.onPause()
     webView.onPause()
     webView.pauseTimers()
+    leaveTime = System.currentTimeMillis()
   }
 
   override fun onDestroyView() {
