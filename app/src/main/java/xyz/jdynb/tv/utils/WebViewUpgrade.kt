@@ -11,7 +11,6 @@ import com.norman.webviewup.lib.service.interfaces.IServiceManager
 import com.norman.webviewup.lib.service.interfaces.IWebViewUpdateService
 import com.norman.webviewup.lib.source.UpgradeAssetSource
 import com.norman.webviewup.lib.source.download.UpgradeDownloadSource
-import xyz.jdynb.tv.BuildConfig
 import xyz.jdynb.tv.DongYuTVApplication
 import java.io.File
 
@@ -27,13 +26,22 @@ object WebViewUpgrade {
    *
    * 这个文件只支持 arm64v8a,arm64v7a android 6 以上系统
    */
-  private const val WEBVIEW_DOWNLOAD_URL =
+  private const val WEBVIEW_DOWNLOAD_URL_23 =
     "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/iWgPm3ep91be"
+
+  /**
+   * WebView 内核下载地址
+   *
+   * android 5.0 以上系统 arm64v8a,arm64v7a
+   */
+  private const val WEBVIEW_DOWNLOAD_URL_21 = "https://lz.qaiu.top/parser?url=https://jdy2002.lanzoue.com/ia7jj3gys12f"
 
   /**
    * WebView 内核文件名
    */
-  private const val WEBVIEW_FILE_NAME = "com.google.android.webview_106.0.5249.65-524906503.apk"
+  private const val WEBVIEW_FILE_NAME_23 = "com.google.android.webview_106.0.5249.65-524906503.apk"
+
+  private const val WEBVIEW_FILE_NAME_21 = "com.google.android.webview_85.0.4183.59.apk"
 
   private const val TAG = "WebViewUpgrade"
 
@@ -76,13 +84,16 @@ object WebViewUpgrade {
       val version = getWebViewVersionNumber()
       if (version < WEBVIEW_MIN_VERSION) {
 
-        val file = File(context.filesDir, WEBVIEW_FILE_NAME)
+        val fileName = if (version >= 23) WEBVIEW_FILE_NAME_23 else WEBVIEW_FILE_NAME_21
+
+        val file = File(context.filesDir, fileName)
         val upgradeSource = if (false/*BuildConfig.DEBUG*/) {
           UpgradeAssetSource(context, "com.google.android.webview_106.0.5249.65-524906503(arm-v8a+arm64-v7a).apk", file)
         } else {
+          val downloadUrl = if (version >= 23) WEBVIEW_DOWNLOAD_URL_23 else WEBVIEW_DOWNLOAD_URL_21
           UpgradeDownloadSource(
             DongYuTVApplication.Companion.context,
-            WEBVIEW_DOWNLOAD_URL,
+            downloadUrl,
             file
           )
         }

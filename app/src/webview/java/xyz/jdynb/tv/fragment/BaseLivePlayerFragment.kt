@@ -1,6 +1,5 @@
 package xyz.jdynb.tv.fragment
 
-import android.util.Log
 import xyz.jdynb.tv.enums.JsType
 import xyz.jdynb.tv.model.LiveChannelModel
 import xyz.jdynb.tv.utils.toArray

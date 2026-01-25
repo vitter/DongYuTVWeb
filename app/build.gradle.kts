@@ -6,7 +6,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   kotlin("plugin.serialization") version "2.1.21"
-  alias(libs.plugins.google.ksp) // ksp
+  // alias(libs.plugins.google.ksp) // ksp
   id("kotlin-kapt") // brv 必须引入此插件
 }
 
@@ -30,7 +30,7 @@ android {
 
   defaultConfig {
     applicationId = "xyz.jdynb.tv"
-    minSdk = 23
+    minSdk = 21
     //noinspection ExpiredTargetSdkVersion
     targetSdk = 28
     versionCode = 7
@@ -58,10 +58,6 @@ android {
   }
   kotlinOptions {
     jvmTarget = "11"
-  }
-
-  aaptOptions {
-    noCompress("apk")
   }
 
   flavorDimensions("example")

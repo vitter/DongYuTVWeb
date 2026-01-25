@@ -123,6 +123,7 @@ object JsManager {
     type: JsType,
     vararg args: Pair<String, Any?>
   ) {
+    Log.i("JsManager", "playConfig: $playerConfig, $type")
     getJs(playerConfig, type)?.let {
       var index = 0
       it.forEach { jsStr ->

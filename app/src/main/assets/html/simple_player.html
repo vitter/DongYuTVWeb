@@ -64,6 +64,7 @@
 
     function playLive(url, headers) {
         video.volume = 1
+        console.log('liveUrl:', url)
         
         // 检查是否支持 HLS.js 且为 m3u8 文件
         if (Hls.isSupported() && url.includes('.m3u8')) {
