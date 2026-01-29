@@ -9,7 +9,7 @@ import xyz.jdynb.tv.model.LiveChannelModel
 /**
  * 央视频直播播放器实现
  */
-@Deprecated("使用 BaseLivePlayerFragment 替代")
+@Deprecated("使用 BaseLivePlayerFragment 替代", replaceWith = ReplaceWith("BaseLivePlayerFragment"))
 class YspLivePlayerFragment : BaseLivePlayerFragment() {
 
   companion object {

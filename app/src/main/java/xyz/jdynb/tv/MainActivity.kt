@@ -23,6 +23,7 @@ import xyz.jdynb.tv.dialog.ChannelListDialog
 import xyz.jdynb.tv.dialog.UpdateDialog
 import xyz.jdynb.tv.fragment.LivePlayerFragment
 import xyz.jdynb.tv.model.UpdateModel
+import xyz.jdynb.tv.utils.UpdateUtils
 import xyz.jdynb.tv.utils.WebViewUpgrade
 import java.net.HttpURLConnection
 import java.net.URL
@@ -33,12 +34,6 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
   companion object {
 
     private const val TAG = "MainActivity"
-
-    /**
-     * 检查更新地址
-     */
-    private const val CHECK_UPDATE_URL =
-      "https://gitee.com/jdy2002/DongYuTvWeb/raw/master/update.json"
 
   }
 
@@ -85,14 +80,8 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
   override fun initData() {
     lifecycleScope.launch {
-      mainViewModel.currentChannelModel.collect {
-        Log.i(TAG, "currentChannelModel: $it")
-      }
-    }
-
-    lifecycleScope.launch {
       // FIXME: 没有电视，不知道更新有没有用
-      checkUpdate()
+      UpdateUtils.checkUpdate(this@MainActivity)
     }
 
     lifecycleScope.launch {
@@ -120,47 +109,8 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
     val tag = fragmentClazz.name
     val target = fragmentClazz.getDeclaredConstructor().newInstance()
     livePlayerFragment = target
-    /*val livePlayerFragment = supportFragmentManager
-      .findFragmentByTag(tag) as? LivePlayerFragment
-    val target = livePlayerFragment ?: (supportFragmentManager.fragmentFactory.instantiate(
-      fragmentClazz.classLoader!!,
-      tag
-    ))
-    supportFragmentManager.fragments.forEach {
-      if (it != null && it != target && it.isAdded && it.id == R.id.fragment) {
-        transaction.hide(it)
-      }
-    }*/
     transaction.replace(R.id.fragment, target, tag)
     transaction.commitNow()
-  }
-
-  private suspend fun checkUpdate() {
-    try {
-      val updateModel = withContext(Dispatchers.IO) {
-        val connection: HttpURLConnection =
-          URL(CHECK_UPDATE_URL).openConnection() as HttpURLConnection
-        connection.inputStream.use { inputStream ->
-          val content = inputStream.readBytes().toString(StandardCharsets.UTF_8)
-          Log.i(TAG, "content: $content")
-          val json = Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-          }
-          json.decodeFromString<UpdateModel>(content)
-        }
-      }
-      Log.i(TAG, "updateModel: $updateModel")
-      if (AppUtils.getAppVersionCode() < updateModel.versionCode) {
-        // 发现新版本
-        UpdateDialog(this, updateModel).run {
-          setCancelable(false)
-          setCanceledOnTouchOutside(false)
-          show()
-        }
-      }
-    } catch (_: Exception) {
-    }
   }
 
   override fun onClick(v: View) {

@@ -9,6 +9,51 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:gravity="center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:focusable="true"
+                android:background="@drawable/bg_select"
+                android:textSize="17sp"
+                android:id="@+id/btn_back"
+                android:text="返回"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:layout_marginStart="8dp"
+                android:focusable="true"
+                android:background="@drawable/bg_select"
+                android:textSize="17sp"
+                android:id="@+id/btn_update"
+                android:text="检查更新"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_marginStart="8dp"
+                tools:text="15秒无操作后自动返回"
+                android:id="@+id/tv_tips"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_marginStart="10dp"
+                android:text="双击频道换台"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:padding="20dp"
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -34,38 +79,6 @@
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:gravity="center_vertical"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:textSize="17sp"
-                android:id="@+id/btn_back"
-                android:text="返回"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                tools:text="15秒无操作后自动返回"
-                android:id="@+id/tv_tips"
-                android:textSize="20sp"
-                android:textColor="@color/white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                android:layout_marginStart="10dp"
-                android:text="双击频道换台"
-                android:textSize="20sp" 
-                android:textColor="@color/white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 

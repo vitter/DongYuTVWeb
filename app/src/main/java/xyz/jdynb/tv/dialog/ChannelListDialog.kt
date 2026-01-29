@@ -24,6 +24,7 @@ import xyz.jdynb.tv.databinding.DialogChannelListBinding
 import xyz.jdynb.tv.databinding.ItemListGroupBinding
 import xyz.jdynb.tv.model.LiveChannelTypeModel
 import xyz.jdynb.tv.model.LiveChannelModel
+import xyz.jdynb.tv.utils.UpdateUtils
 import xyz.jdynb.tv.utils.isTv
 
 class ChannelListDialog(
@@ -155,17 +156,39 @@ class ChannelListDialog(
         }
       }
 
+      // 点击左侧的分类
       R.id.tv_group.onClick {
         setChecked(modelPosition, true)
       }
     }
 
-    binding.btnBack.isVisible = !isTv(context)
+    // 返回
     binding.btnBack.setOnClickListener {
       dismiss()
     }
+
+    // 检查更新
+    binding.btnUpdate.setOnClickListener {
+      activity.lifecycleScope.launch {
+        UpdateUtils.checkUpdate(context)
+      }
+    }
   }
+
   override fun initData() {
+    activity.lifecycleScope.launch {
+      mainViewModel.currentChannelType.collect { channelType ->
+        val checkedPosition = binding.rvGroup.models?.indexOfFirst { model ->
+          model as LiveChannelTypeModel
+          channelType == model.channelType
+        } ?: return@collect
+        if (checkedPosition == -1) {
+          return@collect
+        }
+        binding.rvGroup.bindingAdapter.setChecked(checkedPosition, true)
+      }
+    }
+
     activity.lifecycleScope.launch {
       mainViewModel.channelTypeModelList.collect {
         binding.rvGroup.models = it
