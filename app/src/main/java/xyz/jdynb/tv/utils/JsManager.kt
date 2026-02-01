@@ -13,8 +13,14 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
+/**
+ * 操作 JS 脚本
+ */
 object JsManager {
 
+  /**
+   * js 脚本表，用于缓存已加载的 js 脚本文件，提升性能
+   */
   private val jsMap = mutableMapOf<String, List<String>>()
 
   private fun createConnection(url: String): HttpURLConnection {
@@ -42,10 +48,16 @@ object JsManager {
     return jsFile
   }
 
+  /**
+   * 写入 js 文件到本地目录中
+   */
   suspend fun writeJsToLocal(name: String, type: JsType, content: String) = withContext(Dispatchers.IO) {
     createJsFile(name, type).writeText(content)
   }
 
+  /**
+   * 从本地获取 js 脚本文件
+   */
   suspend fun getJsFromLocal(name: String, type: JsType) =
     withContext(Dispatchers.IO) {
       val jsFile = createJsFile(name, type)
@@ -56,6 +68,14 @@ object JsManager {
       }
     }
 
+  /**
+   * 从 assets 中的文件获取 js 脚本
+   *
+   * @param name 目录名称，和 player 配置文件中的 id 相对应
+   * @param type js 类型
+   *
+   * @see LiveModel
+   */
   suspend fun getJsFromAsset(name: String, type: JsType) = withContext(Dispatchers.IO) {
     DongYuTVApplication.context.assets.open("js/${name}/${type.type}.js")
       .readBytes().toString(Charsets.UTF_8)
@@ -108,6 +128,14 @@ object JsManager {
       }
     } as List<String>?
 
+  /**
+   * 通过 player 配置和 js类型 获取对应需要执行的 js 脚本列表
+   *
+   * @param playerConfig 播放配置
+   * @param type js 类型
+   *
+   * @see LiveModel
+   */
   suspend fun getJs(playerConfig: LiveModel.Player, type: JsType): List<String>? {
     var jsList = jsMap[playerConfig.id + "-" + type.type]
     if (jsList.isNullOrEmpty()) {
@@ -118,6 +146,17 @@ object JsManager {
     return jsList
   }
 
+  /**
+   * 扩展WebView执行JS脚本
+   *
+   * 详细的配置请查看文件 /assets/live-3.jsonc
+   *
+   * @param playerConfig 播放配置
+   * @param type js类型配置
+   * @param args 所需注入的参数
+   *
+   * @see LiveModel
+   */
   suspend fun WebView.execJs(
     playerConfig: LiveModel.Player,
     type: JsType,

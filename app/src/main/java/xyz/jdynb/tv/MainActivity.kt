@@ -13,21 +13,11 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.drake.engine.base.EngineActivity
-import com.drake.engine.utils.AppUtils
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import xyz.jdynb.tv.databinding.ActivityMainBinding
 import xyz.jdynb.tv.dialog.ChannelListDialog
-import xyz.jdynb.tv.dialog.UpdateDialog
 import xyz.jdynb.tv.fragment.LivePlayerFragment
-import xyz.jdynb.tv.model.UpdateModel
-import xyz.jdynb.tv.utils.UpdateUtils
 import xyz.jdynb.tv.utils.WebViewUpgrade
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.StandardCharsets
 
 class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main) {
 
@@ -37,6 +27,9 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
   }
 
+  /**
+   * 当前显示的 LivePlayerFragment
+   */
   private var livePlayerFragment: LivePlayerFragment? = null
 
   private lateinit var channelListDialog: ChannelListDialog
@@ -79,11 +72,6 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
   }
 
   override fun initData() {
-    lifecycleScope.launch {
-      // FIXME: 没有电视，不知道更新有没有用
-      UpdateUtils.checkUpdate(this@MainActivity)
-    }
-
     lifecycleScope.launch {
       mainViewModel.currentChannelType.collect {
         if (it.isEmpty()) return@collect
@@ -129,6 +117,10 @@ class MainActivity : EngineActivity<ActivityMainBinding>(R.layout.activity_main)
 
       R.id.btn_right -> {
         mainViewModel.up()
+      }
+
+      R.id.btn_refresh -> {
+        livePlayerFragment?.refresh()
       }
     }
   }

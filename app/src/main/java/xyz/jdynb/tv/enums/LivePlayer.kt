@@ -26,11 +26,17 @@ enum class LivePlayer(val player: String, val clazz: Class<*>) {
 
   companion object {
 
+    /**
+     * 通过 player 名称获取对应的 LivePlayer 配置
+     */
     @JvmStatic
     fun getLivePlayerForPlayer(player: String): LivePlayer? {
       return LivePlayer.entries.find { it.player == player }
     }
 
+    /**
+     * 通过 class 获取对应的 LivePlayer 配置
+     */
     @JvmStatic
     fun getLivePlayerForClass(clazz: Class<*>): LivePlayer {
       return LivePlayer.entries.find { it.clazz == clazz } ?: YSP

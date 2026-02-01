@@ -36,6 +36,10 @@ open class BaseLivePlayerFragment: LivePlayerFragment() {
     execJs(JsType.RESUME_PAUSE)
   }
 
+  override fun refresh() {
+    play(currentChannelModel)
+  }
+
   override fun shouldOverride(url: String): Boolean {
     return false
   }

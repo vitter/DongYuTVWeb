@@ -46,6 +46,10 @@ class YspLivePlayerFragment : BaseLivePlayerFragment() {
     super.resumeOrPause()
   }
 
+  override fun refresh() {
+    webView.loadUrl("${webView.url}?pid=${mainViewModel.currentChannelModel.value!!.pid}")
+  }
+
   /**
    * 页面加载完成时的回调
    *

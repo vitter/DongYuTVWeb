@@ -61,6 +61,10 @@ class MainViewModel : ViewModel() {
   private var beforeIndex = currentIndex.value
 
   private var _liveModel: LiveModel? = null
+
+  /**
+   * /assets/live-3.jsonc 的反序列配置对象
+   */
   val liveModel get() = _liveModel!!
 
   private val _channelModelList = MutableStateFlow<List<LiveChannelModel>>(emptyList())
@@ -91,9 +95,9 @@ class MainViewModel : ViewModel() {
 
   @OptIn(ExperimentalSerializationApi::class)
   private val json = Json {
-    ignoreUnknownKeys = true
-    encodeDefaults = true
-    allowComments = true
+    ignoreUnknownKeys = true // 忽略未知的键
+    encodeDefaults = true // 序列化默认值
+    allowComments = true // 允许注释
   }
 
   /**
@@ -101,61 +105,82 @@ class MainViewModel : ViewModel() {
    */
   @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
   val currentChannelModel = _currentIndex
+    // 300ms 防抖
     .debounce(300)
+    // 每次改变时都执行这里
     .onEach {
+      // 非输入状态时
       if (!isTypingNumber()) {
         // 记录切台之前的频道索引位置
         beforeIndex = it
       }
+      // 显示当前的频道信息
       _showCurrentChannel.value = true
     }
+    // 转换为一个新的流
     .flatMapLatest {
       if (_channelModelList.value.isEmpty()) {
         // 如果当前频道列表为空，则初始化频道列表，并初始化 JS 脚本
         init()
       }
+      // 保存当前的频道索引
       SPKeyConstants.CURRENT_INDEX.put(it)
       flowOf(channelModelList.value.getOrNull(it) ?: getDefaultChannelModel())
     }
+    // 改变时都会执行这里
     .onEach {
+      // 设置当前的频道分类
       _currentChannelType.value = it.channelType
       // 保存当前的频道信息
       SPKeyConstants.CURRENT_CHANNEL.put(json.encodeToString(it))
     }
+    // 发生错误时
     .catch {
+      // 播放默认的频道
       emit(getDefaultChannelModel())
     }
     .stateIn(
       viewModelScope,
       SharingStarted.Eagerly,
-      null
+      null // 默认没有状态
     )
 
   /**
    * 初始化数据
    */
   private suspend fun init() = withContext(Dispatchers.IO) {
+    // 读取网络上的配置文件
     val liveContent = NetworkUtils.getResponseBodyCache(LIVE_CONFIG_URL, "live-3.jsonc")
+    // 反序列化赋值给 liveModel 对象
     _liveModel = json.decodeFromString<LiveModel>(liveContent)
+    // 频道类型列表
     _channelTypeModelList.value =
       liveModel.channel.filter {
+        // 过滤掉一些配置出错的频道
         val currentPlayer = liveModel.player.find { player -> player.id == it.player }
         if (currentPlayer == null) {
           return@filter false
         }
+        // 过滤隐藏掉的和没有找到播放配置的频道
         !it.hidden && LivePlayer.getLivePlayerForPlayer(currentPlayer.name) != null
       }
+    // 将所有频道进行打平存储起来
     _channelModelList.value = _channelTypeModelList.value.flatMap { liveChannelTypeModel ->
+      // 一些关键信息需要进行遍历配置
       liveChannelTypeModel.channelList.onEach {
+        // 设置 hidden
         if (liveChannelTypeModel.hidden != it.hidden) {
           it.hidden = liveChannelTypeModel.hidden
         }
+        // player 名称
         if (it.player.isEmpty()) {
           it.player = liveChannelTypeModel.player
         }
+        // 频道类型
         it.channelType = liveChannelTypeModel.channelType
       }
     }.filter { !it.hidden }.onEachIndexed { index, model ->
+      // 统一设置频道号码
       model.number = index + 1 // 设置频道序号
     }//distinctBy { it.number }.sortedBy { it.number } // 去重，并且升序排序
   }
@@ -185,7 +210,11 @@ class MainViewModel : ViewModel() {
   )
 
   /**
-   * 通过渠道获取到对应的 Fragment
+   * 通过频道获取到对应的 LivePlayerFragment
+   *
+   * @see LiveChannelModel
+   * @see LiveModel
+   * @see LivePlayerFragment
    */
   @Suppress("UNCHECKED_CAST")
   fun getFragmentClassForChannel(channelModel: LiveChannelModel): Class<LivePlayerFragment>? {

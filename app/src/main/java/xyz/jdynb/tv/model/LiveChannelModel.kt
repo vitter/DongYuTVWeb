@@ -7,16 +7,36 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import xyz.jdynb.tv.BR
 
+/**
+ * 直播频道
+ */
 @Serializable
 data class LiveChannelModel(
+  /**
+   * 名称
+   */
   @SerialName("channelName")
   var channelName: String = "",
+  /**
+   * pid，央视频使用此 id 区分不同频道，现已弃用
+   */
+  @Deprecated("由于YSP需要，不移除，使用 args 字段替换此字段")
   @SerialName("pid")
   var pid: String? = "",
+  /**
+   * 台标，目前没有用上
+   */
   @SerialName("tvLogo")
   var tvLogo: String = "",
+  /**
+   * streamId，央视频需要此 id，现已弃用
+   */
+  @Deprecated("由于YSP需要，不移除，使用 args 字段替换此字段")
   @SerialName("streamId")
   var streamId: String? = "",
+  /**
+   * 频道分类
+   */
   @SerialName("channelType")
   var channelType: String = "",
   /**
@@ -33,12 +53,23 @@ data class LiveChannelModel(
    * 播放器 id
    */
   var player: String = "",
+
   /**
    * 是否隐藏
    */
-  var hidden: Boolean = false
+  var hidden: Boolean = false,
+
+  /**
+   * 描述
+   */
+  val desc: String? = null,
 ) : BaseObservable() {
 
+  val showDesc: String get() = desc ?: ""
+
+  /**
+   * 选中状态
+   */
   @get:Bindable
   var isSelected: Boolean = false
     set(value) {

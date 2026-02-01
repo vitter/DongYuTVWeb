@@ -13,7 +13,9 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-// JavaScript 桥接类
+/**
+ * JavaScript 桥接类。适配内部的 HttpRequest 工具类
+ */
 class JSBridge(private val context: Context?) {
   @JavascriptInterface
   fun httpRequest(url: String, method: String, headers: String?, body: String?): String {

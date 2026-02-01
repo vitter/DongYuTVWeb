@@ -18,4 +18,9 @@ interface Playable {
    * 恢复或暂停
    */
   fun resumeOrPause()
+
+  /**
+   * 刷新
+   */
+  fun refresh()
 }

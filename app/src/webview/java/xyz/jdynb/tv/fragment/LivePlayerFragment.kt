@@ -151,6 +151,10 @@ abstract class LivePlayerFragment : Fragment(), Playable {
     }
   }
 
+  override fun refresh() {
+    binding.webview.reload()
+  }
+
   /**
    * 执行加载 URL
    *

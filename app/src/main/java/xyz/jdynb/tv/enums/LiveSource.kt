@@ -1,5 +1,8 @@
 package xyz.jdynb.tv.enums
 
+/**
+ * 直播源
+ */
 enum class LiveSource(val source: String) {
   /**
    * 通用

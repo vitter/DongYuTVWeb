@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -11,17 +12,20 @@
 
     </data>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/tv_channel"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:background="@drawable/bg_select"
-        android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="14dp">
 
         <TextView
+            android:id="@+id/tv_number"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{String.valueOf(m.number)}"
@@ -31,6 +35,9 @@
             tools:text="1" />
 
         <TextView
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_number"
+            app:layout_constraintBottom_toTopOf="@id/tv_desc"
             android:layout_marginStart="6dp"
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
@@ -39,10 +46,23 @@
             android:textColor="@color/tv_select"
             android:text="@{m.channelName}"
             android:textSize="19sp"
-            tools:text="@string/app_name">
+            tools:text="@string/app_name" />
 
-        </TextView>
+        <TextView
+            gone="@{m.desc != null}"
+            android:text="@{m.desc}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/tv_desc"
+            tools:visibility="gone"
+            android:maxLines="1"
+            tools:text="这是频道描述"
+            android:textColor="#A0FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            app:layout_constraintStart_toStartOf="@id/tv_name"
+            app:layout_constraintEnd_toEndOf="@id/tv_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>
